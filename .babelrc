@@ -1,0 +1,31 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "useBuiltIns": "usage",
+            "targets": {
+                "browsers": [
+                    "last 1 version",
+                    "> 1%",
+                    "maintained node versions",
+                    "not dead"
+                ]
+            },
+            "modules": false,
+            "forceAllTransforms": false
+        }]
+    ],
+    "plugins": [
+        ["@babel/plugin-transform-runtime", {
+            "helpers": false,
+            "regenerator": false,
+            "useESModules": true
+        }],
+        "@babel/plugin-syntax-dynamic-import",
+        ["@babel/plugin-proposal-object-rest-spread", {
+            "loose": true,
+            "useBuiltIns": true
+        }],
+        "@babel/plugin-proposal-class-properties"
+    ],
+    "comments": false
+}

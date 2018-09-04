@@ -1,0 +1,10 @@
+# IntelliJ
+.idea
+*.iml
+
+# Node.js
+/node_modules
+/package-lock.json
+
+# Project
+/static
