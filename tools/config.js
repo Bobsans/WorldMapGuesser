@@ -12,7 +12,13 @@ const config = {
         env: 'development',
         sourcemap: true,
         port: 8300,
-        autoOpenBrowser: true
+        autoOpenBrowser: true,
+        proxyTable: [
+            [(p) => [/\/static\//, /\/__webpack_hmr/].reduce((a, c) => a && !p.match(c), true), {
+                target: 'http://localhost:8280/',
+                logLevel: 'warn'
+            }]
+        ]
     },
 
     // Production mode

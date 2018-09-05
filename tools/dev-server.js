@@ -2,6 +2,7 @@ const path = require('path');
 const opn = require('opn');
 const express = require('express');
 const webpack = require('webpack');
+const HttpProxyMiddleware = require('http-proxy-middleware');
 const WebpackDevMiddleware = require('webpack-dev-middleware');
 const WebpackHotMiddleware = require('webpack-hot-middleware');
 
@@ -30,9 +31,7 @@ let hotMiddleware = WebpackHotMiddleware(compiler, {
     heartbeat: 10000
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.resolve('index.html'));
-});
+config.dev.proxyTable.forEach((proxy) => app.use(HttpProxyMiddleware(...proxy)));
 
 app.use(devMiddleware);
 app.use(hotMiddleware);
