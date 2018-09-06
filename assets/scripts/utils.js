@@ -18,3 +18,33 @@ export function secondsToTime(seconds) {
 
     return `${dysstr}${hrsstr}${minstr}${secstr}`;
 }
+
+export function livesRender(count) {
+    let output = '';
+    for (let i = 0; i < 3; i++) {
+        output += `<i${i < count ? ' class="active"' : ''}>&hearts;</i>`;
+    }
+    return output;
+}
+
+export function createElement(name, attrs = {}, children = []) {
+    let el = document.createElement(name);
+    for (let [key, val] of Object.entries(attrs)) {
+        switch (key) {
+            case 'class':
+                el.classList.add(...(Array.isArray(val) ? val : val.split(' ')));
+                break;
+            case 'text':
+                el.innerText = val;
+                break;
+            default:
+                el.setAttribute(key, val);
+        }
+
+        el.attributes[key] = val;
+    }
+    for (let child of children) {
+        el.appendChild(child);
+    }
+    return el;
+}

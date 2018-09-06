@@ -1,13 +1,14 @@
 import SvgPanZoom from 'svg-pan-zoom';
-import {secondsToTime, shuffle} from '@/scripts/utils';
+import {createElement, livesRender, secondsToTime, shuffle} from '@/scripts/utils';
 import countries from '@/data/countries';
 
 export default class MapController {
     constructor(selector, controls) {
-        this.svg = MapController.createSVG();
+        this.container = document.querySelector(selector);
         this.controls = document.querySelector(controls);
 
-        document.querySelector(selector).appendChild(this.svg);
+        this.svg = MapController.createSVG();
+        this.container.appendChild(this.svg);
 
         this.initPanAndZoom();
         this.dragging = false;
@@ -96,6 +97,8 @@ export default class MapController {
         this.controls.querySelector('.details .score').innerText = `${this.suggessed.length}/${Object.keys(countries).length}`;
         this.time = 0;
         this.controls.querySelector('.details .time').innerText = secondsToTime(this.time);
+        this.lives = 3;
+        this.controls.querySelector('.details .lives').innerHTML = livesRender(this.lives);
         clearInterval(this.timeHandle);
     }
 
@@ -107,12 +110,21 @@ export default class MapController {
     }
 
     wrongClick() {
+        this.svg.firstChild.appendChild(this.current.element);
         this.current.element.classList.add('error');
+
+        this.lives--;
+        if (this.lives > 0) {
+            this.nextCountry(true);
+        } else {
+            this.loose();
+        }
+        this.controls.querySelector('.details .lives').innerHTML = livesRender(this.lives);
     }
 
     prevCountry() {
         let idx = this.countryKeys.indexOf(this.currentId);
-        this.currentId = this.countryKeys[idx - 1 < 0 ? this.countryKeys.length : idx - 1];
+        this.currentId = this.countryKeys[idx - 1 < 0 ? this.countryKeys.length - 1 : idx - 1];
         this.controls.querySelector('.country-selector .current').innerText = this.current.name;
     }
 
@@ -128,9 +140,32 @@ export default class MapController {
 
     loose() {
         clearInterval(this.timeHandle);
+        this.showResult('loose');
     }
 
     win() {
 
+    }
+
+    showResult(additional) {
+        let div = createElement('div', {class: ['result', ...(additional ? [additional] : []), 'hidden']}, [
+            createElement('div', {class: 'result-container'}, [
+                createElement('div', {class: 'title', text: `You ${additional}!`}),
+                createElement('div', {class: 'body'}, [
+                    createElement('div', {class: 'score-row'}, [
+                        createElement('span', {text: 'SCORE: '}),
+                        createElement('span', {text: `${this.suggessed.length}/${Object.keys(countries).length} (${!this.suggessed.length ? 0 : (Object.keys(countries).length / 100 * this.suggessed.length).toFixed(1)}%)`, class: 'value'})
+                    ]),
+                    createElement('div', {class: 'score-row'}, [
+                        createElement('span', {text: 'TIME'}),
+                        createElement('span', {text: `${secondsToTime(this.time)}`, class: 'value'})
+                    ])
+                ]),
+                createElement('div', {class: 'footer'})
+            ])
+        ]);
+
+        this.container.appendChild(div);
+        setTimeout(() => div.classList.remove('hidden'), 100);
     }
 }
