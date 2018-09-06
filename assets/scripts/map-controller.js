@@ -62,7 +62,8 @@ export default class MapController {
     bindEvents() {
         this.svg.addEventListener('click', (e) => {
             let el = e.target;
-            if (el instanceof SVGPathElement && !this.dragging) {
+            if (el instanceof SVGPathElement && !el.clicked && !this.dragging) {
+                el.clicked = true;
                 if (el === this.current.element) {
                     this.rightClick();
                 } else {
