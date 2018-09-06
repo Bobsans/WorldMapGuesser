@@ -37,17 +37,17 @@ echo -e "${YL}AUTOUPGRADER-3000 STARTED!${NC}"
 echo "${BL}-------------------------------------------------${NC}"
 
 echo -e "${YL}###  PREPARING TEMPORARY DIRECTORY  ###${NC}"
-if [ ! -d "${TMPDIR}" ]; then
+[ ! -d "${TMPDIR}" ] && {
     mkdir ${TMPDIR}
-fi
+}
 check_ret_val "Unable to create direcory ${TMPDIR}"
 cd ${TMPDIR}
 
 echo -e "${YL}###  PULLING GIT REPOSITORY  ###${NC}"
-if [ ! -d "${TMPDIR}/.git" ]; then
+[ ! -d "${TMPDIR}/.git" ] && {
     git init
     git remote add origin ${REPOSITORY}
-fi
+}
 git pull origin master
 check_ret_val
 
@@ -78,12 +78,12 @@ check_ret_val
 echo -e "${YL}###  CREATING VENV  ###${NC}"
 virtualenv env && source env/bin/activate
 check_ret_val
+[ -f "${TMPDIR}/requirements.txt" ] && {
+    pip install -r ${TMPDIR}/requirements.txt
+    check_ret_val
+}
 
-echo -e "${YL}###  UPDATING VENV  ###${NC}"
-pip install -r ${TMPDIR}/requirements.txt
-check_ret_val
-
-echo -e "${YL}###  COPY FILES  ###${NC}"
+echo -e "${YL}###  COPYING FILES  ###${NC}"
 for file in "${FILESTOCOPY[@]}";
     do cp -rf "${TMPDIR}/$file" "${DESTDIR}/$file";
 done
