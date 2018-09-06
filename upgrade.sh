@@ -37,21 +37,19 @@ echo -e "${YL}AUTOUPGRADER-3000 STARTED!${NC}"
 echo "${BL}-------------------------------------------------${NC}"
 
 echo -e "${YL}###  PREPARING TEMPORARY DIRECTORY  ###${NC}"
-[ ! -d "${TMPDIR}" ] && {
-    mkdir ${TMPDIR}
-}
+[[ -d "${TMPDIR}" ]] || mkdir ${TMPDIR}
 check_ret_val "Unable to create direcory ${TMPDIR}"
 cd ${TMPDIR}
 
 echo -e "${YL}###  PULLING GIT REPOSITORY  ###${NC}"
-[ ! -d "${TMPDIR}/.git" ] && {
+[[ -d "${TMPDIR}/.git" ]] || {
     git init
     git remote add origin ${REPOSITORY}
 }
 git pull origin master
 check_ret_val
 
-[ -f "${TMPDIR}/upgrade.sh" ] && [ "${MEPATH}" -ot "${TMPDIR}/upgrade.sh" ] && {
+[[ -f "${TMPDIR}/upgrade.sh" ]] && [[ "${MEPATH}" -ot "${TMPDIR}/upgrade.sh" ]] && {
     echo -e "${YL}###  UPDATE SELF  ###${NC}"
     cp -rf "${TMPDIR}/upgrade.sh" "${MEPATH}"
     check_ret_val
@@ -78,7 +76,7 @@ check_ret_val
 echo -e "${YL}###  CREATING VENV  ###${NC}"
 virtualenv env && source env/bin/activate
 check_ret_val
-[ -f "${TMPDIR}/requirements.txt" ] && {
+[[ -f "${TMPDIR}/requirements.txt" ]] && {
     pip install -r ${TMPDIR}/requirements.txt
     check_ret_val
 }
