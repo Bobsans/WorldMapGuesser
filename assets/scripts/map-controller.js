@@ -154,7 +154,7 @@ export default class MapController {
                 createElement('div', {class: 'body'}, [
                     createElement('div', {class: 'score-row'}, [
                         createElement('span', {text: 'SCORE: '}),
-                        createElement('span', {text: `${this.suggessed.length}/${Object.keys(countries).length} (${!this.suggessed.length ? 0 : (Object.keys(countries).length / 100 * this.suggessed.length).toFixed(1)}%)`, class: 'value'})
+                        createElement('span', {text: `${this.suggessed.length}/${Object.keys(countries).length} (${!this.suggessed.length ? 0 : (this.suggessed.length / (Object.keys(countries).length / 100)).toFixed(1)}%)`, class: 'value'})
                     ]),
                     createElement('div', {class: 'score-row'}, [
                         createElement('span', {text: 'TIME'}),
