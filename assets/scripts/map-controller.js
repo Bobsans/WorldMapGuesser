@@ -63,11 +63,13 @@ export default class MapController {
         this.svg.addEventListener('click', (e) => {
             let el = e.target;
             if (el instanceof SVGPathElement && !el.classList.contains('success') && !el.classList.contains('error') && !this.dragging) {
-                if (el === this.current.element) {
-                    this.rightClick();
-                } else {
-                    this.wrongClick();
-                }
+                try {
+                    if (el === this.current.element) {
+                        this.rightClick();
+                    } else {
+                        this.wrongClick();
+                    }
+                } catch (e) {}
             }
             this.dragging = false;
         });
