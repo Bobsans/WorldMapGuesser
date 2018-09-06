@@ -4,6 +4,8 @@ const UglifyJsWebpackPlugin = require('uglifyjs-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssUrlRelativePlugin = require('css-url-relative-plugin');
+
 
 const utils = require('./utils');
 const config = require('./config');
@@ -129,6 +131,7 @@ module.exports = ({production} = {}) => {
                 filename: '[name].css',
                 chunkFilename: '[id].css'
             }),
+            new CssUrlRelativePlugin({root: config.root}),
             ...(production ? [
                 new CleanWebpackPlugin([config.destpath], {root: config.root, verbose: false})
             ] : [

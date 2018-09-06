@@ -1,4 +1,3 @@
-const path = require('path');
 const opn = require('opn');
 const express = require('express');
 const webpack = require('webpack');

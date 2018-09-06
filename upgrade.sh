@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Config
-REPOSITORY=https://Bobsans:poiKLJ951@bitbucket.org/Bobsans/world-map-guesser-game.git
-TMPDIR=/tmp/world-guesser-game
-DESTDIR=/home/darkboy/games/world-map-guesser
+REPOSITORY="https://Bobsans:poiKLJ951@bitbucket.org/Bobsans/world-map-guesser-game.git"
+TMPDIR="/tmp/world-guesser-game"
+DESTDIR="/home/darkboy/games/world-map-guesser"
 SUPERVISORTASK=world-map-guesser
 FILESTOCOPY=(
     static

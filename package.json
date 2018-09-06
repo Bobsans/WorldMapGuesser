@@ -27,6 +27,7 @@
         "clean-webpack-plugin": "^0.1.19",
         "core-js": "^2.5.7",
         "css-loader": "^1.0.0",
+        "css-url-relative-plugin": "^1.0.0",
         "cssnano": "^4.1.0",
         "eslint": "^5.5.0",
         "eslint-plugin-html": "^4.0.5",
