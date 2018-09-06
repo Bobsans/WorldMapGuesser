@@ -62,8 +62,7 @@ export default class MapController {
     bindEvents() {
         this.svg.addEventListener('click', (e) => {
             let el = e.target;
-            if (el instanceof SVGPathElement && !el.clicked && !this.dragging) {
-                el.clicked = true;
+            if (el instanceof SVGPathElement && !el.classList.contains('success') && !el.classList.contains('error') && !this.dragging) {
                 if (el === this.current.element) {
                     this.rightClick();
                 } else {
@@ -91,7 +90,12 @@ export default class MapController {
     }
 
     reset() {
+        clearInterval(this.timeHandle);
         this.countryKeys = shuffle(Object.keys(countries));
+        this.svg.querySelectorAll('path').forEach((p) => {
+            p.classList.remove('success');
+            p.classList.remove('error');
+        });
         this.currentId = this.countryKeys[0];
         this.controls.querySelector('.country-selector .current').innerText = this.current.name;
         this.suggessed = [];
@@ -100,7 +104,9 @@ export default class MapController {
         this.controls.querySelector('.details .time').innerText = secondsToTime(this.time);
         this.lives = 3;
         this.controls.querySelector('.details .lives').innerHTML = livesRender(this.lives);
-        clearInterval(this.timeHandle);
+        try {
+            this.resultDialog.parentElement.removeChild(this.resultDialog);
+        } catch (e) {}
     }
 
     rightClick() {
@@ -149,7 +155,7 @@ export default class MapController {
     }
 
     showResult(additional) {
-        let div = createElement('div', {class: ['result', ...(additional ? [additional] : []), 'hidden']}, [
+        this.resultDialog = createElement('div', {class: ['result', ...(additional ? [additional] : []), 'hidden']}, [
             createElement('div', {class: 'result-container'}, [
                 createElement('div', {class: 'title', text: `You ${additional}!`}),
                 createElement('div', {class: 'body'}, [
@@ -162,11 +168,13 @@ export default class MapController {
                         createElement('span', {text: `${secondsToTime(this.time)}`, class: 'value'})
                     ])
                 ]),
-                createElement('div', {class: 'footer'})
+                createElement('div', {class: 'footer'}, [
+                    createElement('div', {class: 'restart-button', text: 'RESTART', on: {click: [() => this.reset()]}})
+                ])
             ])
         ]);
 
-        this.container.appendChild(div);
-        setTimeout(() => div.classList.remove('hidden'), 100);
+        this.container.appendChild(this.resultDialog);
+        setTimeout(() => this.resultDialog.classList.remove('hidden'), 100);
     }
 }

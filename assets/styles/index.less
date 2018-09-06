@@ -75,8 +75,10 @@ svg {
             min-width: 500px;
 
             .title {
-                font-size: 24px;
+                padding: 0 0 20px;
+                font-size: 32px;
                 font-weight: bold;
+                text-transform: uppercase;
                 text-align: center;
             }
 
@@ -99,6 +101,18 @@ svg {
                         font-size: 56px;
                         justify-self: flex-end;
                     }
+                }
+            }
+
+            .footer {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .restart-button {
+                    background: @white;
+                    padding: 15px 40px;
+                    box-shadow: @default-shadow;
                 }
             }
         }

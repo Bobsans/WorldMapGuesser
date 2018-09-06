@@ -37,6 +37,13 @@ export function createElement(name, attrs = {}, children = []) {
             case 'text':
                 el.innerText = val;
                 break;
+            case 'on':
+                for (let [event, handlers] of Object.entries(val)) {
+                    for (let handler of handlers) {
+                        el.addEventListener(event, handler, false);
+                    }
+                }
+                break;
             default:
                 el.setAttribute(key, val);
         }
