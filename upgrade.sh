@@ -51,9 +51,8 @@ check_ret_val
 
 [[ -f "${TMPDIR}/upgrade.sh" ]] && [[ "${MEPATH}" -ot "${TMPDIR}/upgrade.sh" ]] && {
     echo -e "${YL}###  UPDATE SELF  ###${NC}"
-    cp -rf "${TMPDIR}/upgrade.sh" "${MEPATH}"
-    check_ret_val
-    exec "${MEPATH}" "$@"
+    echo -e "${YL}RESTARTING...${NC}"
+    cp -rf "${TMPDIR}/upgrade.sh" "${MEPATH}" && chmod +x "${MEPATH}" && exec "${MEPATH}" "$@"
     exit 1
 }
 
