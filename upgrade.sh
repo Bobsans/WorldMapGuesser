@@ -6,9 +6,9 @@ TMPDIR="/tmp/world-guesser-game"
 DESTDIR="/home/darkboy/games/world-map-guesser"
 SUPERVISORTASK=world-map-guesser
 FILESTOCOPY=(
+    app
     static
     templates
-    app.py
 )
 NODELETE=(
     db.sqlite
