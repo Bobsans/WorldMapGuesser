@@ -9,6 +9,7 @@ FILESTOCOPY=(
     app
     static
     templates
+    main.py
 )
 NODELETE=(
     db.sqlite
