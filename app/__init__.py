@@ -1,11 +1,10 @@
 import json
 import os
-from argparse import ArgumentParser
 
-from bottle import abort, request, route, run, template
+from bottle import abort, request, route, template
 
-from app import config
-from app.db import create_tables, db
+from . import config
+from .db import create_tables, db
 
 
 def render(name, **kwargs):
@@ -45,17 +44,3 @@ def send_score():
     except Exception as e:
         print(e)
         return json.dumps({'error': 'Invalid data.'})
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('-p', '--port', type=int, action='store', dest='port', default=8000, help='Port')
-    args = parser.parse_args()
-
-    create_tables()
-
-    try:
-        run(port=args.port)
-    except KeyboardInterrupt:
-        print('kill by ctrl+c')
-        db.close()
