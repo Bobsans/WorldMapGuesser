@@ -74,7 +74,8 @@ supervisorctl stop ${SUPERVISORTASK}
 check_ret_val
 
 echo -e "${YL}###  GO TO DESTDIR AND CLEAR IT  ###${NC}"
-cd ${DESTDIR} && shopt -s extglob && rm -R !($(joinby '|' ${NODELETE[@]}))
+GLOBIGNORE=$(joinby '|' ${NODELETE[@]})
+cd ${DESTDIR} && rm -R *
 check_ret_val
 
 echo -e "${YL}###  CREATING VENV  ###${NC}"
