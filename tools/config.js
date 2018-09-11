@@ -27,12 +27,10 @@ const config = {
         sourcemap: false
     },
 
-    get: (name, hasprod) => {
-        hasprod = typeof hasprod !== 'undefined' ? hasprod : process.env.NODE_ENV === 'production';
+    get: (name, hasprod=true) => {
         return hasprod ? config.prod[name] : config.dev[name];
     },
-    depended: (conf, dev, prod, hasprod) => {
-        hasprod = typeof hasprod !== 'undefined' ? hasprod : process.env.NODE_ENV === 'production';
+    depended: (conf, dev, prod, hasprod=true) => {
         return !hasprod && config.dev[conf] ? dev : (hasprod && config.prod[conf] ? prod : false);
     }
 };

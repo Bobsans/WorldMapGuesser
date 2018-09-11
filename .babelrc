@@ -1,15 +1,16 @@
 {
     "presets": [
         ["@babel/preset-env", {
-            "useBuiltIns": "usage",
             "targets": {
                 "browsers": [
-                    "last 1 version",
-                    "> 1%",
-                    "maintained node versions",
+                    "> 2%",
+                    "not ie <= 10",
+                    "not op_mini all",
                     "not dead"
                 ]
             },
+            "loose": true,
+            "useBuiltIns": "usage",
             "modules": false,
             "forceAllTransforms": false
         }]
@@ -21,10 +22,6 @@
             "useESModules": true
         }],
         "@babel/plugin-syntax-dynamic-import",
-        ["@babel/plugin-proposal-object-rest-spread", {
-            "loose": true,
-            "useBuiltIns": true
-        }],
         "@babel/plugin-proposal-class-properties"
     ],
     "comments": false

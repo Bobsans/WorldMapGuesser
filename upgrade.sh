@@ -10,6 +10,9 @@ FILESTOCOPY=(
     templates
     app.py
 )
+NODELETE=(
+    db.sqlite
+)
 
 # System variables
 MEPATH="$(pwd)/$(basename $BASH_SOURCE)"
@@ -18,6 +21,8 @@ YL=`tput setaf 3`
 GR=`tput setaf 2`
 RD=`tput setaf 1`
 NC=`tput sgr0`
+
+function joinby { local IFS="$1"; shift; echo "$*"; }
 
 check_ret_val () {
     if [ $? -eq 0 ]; then
@@ -69,7 +74,7 @@ supervisorctl stop ${SUPERVISORTASK}
 check_ret_val
 
 echo -e "${YL}###  GO TO DESTDIR AND CLEAR IT  ###${NC}"
-cd ${DESTDIR} && rm -r ./*
+cd ${DESTDIR} && shopt -s extglob && rm -R !($(joinby '|' ${NODELETE[@]}))
 check_ret_val
 
 echo -e "${YL}###  CREATING VENV  ###${NC}"

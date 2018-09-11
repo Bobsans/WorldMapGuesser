@@ -11,7 +11,7 @@ const utils = {
             return {
                 test: new RegExp(`\\.${extension}$`),
                 use: [
-                    production ? MiniCssExtractPlugin.loader : 'style-loader',
+                    production ? MiniCssExtractPlugin.loader : 'vue-style-loader',
                     {
                         loader: 'css-loader',
                         options: {

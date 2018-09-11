@@ -1,5 +1,12 @@
+import Vue from 'vue';
+import App from '@/components/App';
+
 import '@/styles';
 
-import MapController from '@/scripts/map-controller';
+// Init
+Object.defineProperty(Vue.prototype, '$bus', {get() { return this.$root.bus; }});
 
-new MapController('#map', '.controls');
+new Vue({
+    data: {bus: new Vue({})},
+    render: (h) => h(App)
+}).$mount('#app');

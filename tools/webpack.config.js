@@ -5,7 +5,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CssUrlRelativePlugin = require('css-url-relative-plugin');
-
+const {VueLoaderPlugin} = require('vue-loader');
 
 const utils = require('./utils');
 const config = require('./config');
@@ -13,57 +13,45 @@ const config = require('./config');
 module.exports = ({production} = {}) => {
     let configuration = {
         mode: production ? 'production' : 'development',
-        cache: !production,
-        devtool: config.depended('sourcemap', '#source-map', false),
-        target: 'web',
         entry: {
             bundle: utils.srcpath('index.js')
         },
         output: {
-            filename: '[name].js',
             path: utils.destpath(),
-            chunkFilename: '[name].js',
+            filename: '[name].js',
             publicPath: config.publicPath
-        },
-        devServer: {
-            contentBase: './static',
-            hot: true
-        },
-        resolve: {
-            extensions: ['.js', '.json', '.less'],
-            alias: {
-                '@': utils.srcpath(),
-                '$variables': utils.srcpath('styles/variables.less')
-            }
         },
         module: {
             rules: [
                 {
+                    test: /\.vue$/,
+                    loader: 'vue-loader',
+                    options: {
+                        compilerOptions: {
+                            preserveWhitespace: false
+                        },
+                        productionMode: production
+                    }
+                }, {
                     test: /\.js$/,
-                    use: {
-                        loader: 'babel-loader',
-                        options: {
-                            compact: production,
-                            cacheDirectory: true
-                        }
+                    loader: 'babel-loader',
+                    options: {
+                        compact: production,
+                        cacheDirectory: true
                     }
                 }, {
                     test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                    use: {
-                        loader: 'url-loader',
-                        options: {
-                            limit: 10240,
-                            name: 'images/[hash:8].[ext]'
-                        }
+                    loader: 'url-loader',
+                    options: {
+                        limit: 10240,
+                        name: 'images/[hash:8].[ext]'
                     }
                 }, {
                     test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-                    use: {
-                        loader: 'url-loader',
-                        options: {
-                            limit: 10240,
-                            name: 'fonts/[hash:8].[ext]'
-                        }
+                    loader: 'url-loader',
+                    options: {
+                        limit: 10240,
+                        name: 'fonts/[hash:8].[ext]'
                     }
                 },
                 ...utils.styleLoaders({
@@ -72,6 +60,24 @@ module.exports = ({production} = {}) => {
                 })
             ]
         },
+        resolve: {
+            extensions: ['.js', '.vue', '.json', '.less'],
+            alias: {
+                '@': utils.srcpath(),
+                '$variables': utils.srcpath('styles/variables.less')
+            }
+        },
+        performance: {
+            hints: false
+        },
+        devtool: config.depended('sourcemap', 'source-map', false, production),
+        stats: {
+            colors: true,
+            modules: false,
+            children: false,
+            chunks: false
+        },
+        cache: !production,
         optimization: {
             namedChunks: true,
             runtimeChunk: {
@@ -124,9 +130,7 @@ module.exports = ({production} = {}) => {
             ]
         },
         plugins: [
-            new Webpack.DefinePlugin({
-                PRODUCTION: JSON.stringify(production)
-            }),
+            new VueLoaderPlugin(),
             new MiniCssExtractPlugin({
                 filename: '[name].css',
                 chunkFilename: '[id].css'
