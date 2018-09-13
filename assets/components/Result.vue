@@ -57,7 +57,7 @@
         },
         async mounted() {
             await this.$bus.$emit('send-score');
-            this.top = await (await fetch(`${location.trim('/')}/get-top`)).json();
+            this.top = await (await fetch(`${location.href.trim('/')}/get-top`)).json();
         }
     };
 </script>
