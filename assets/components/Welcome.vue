@@ -7,12 +7,16 @@
                 <button :disabled="!nickname" @click="start">START</button>
             </div>
         </div>
+        <score-table/>
     </div>
 </template>
 
 <script>
+    import ScoreTable from '@/components/ScoreTable';
+
     export default {
         name: 'Welcome',
+        components: {ScoreTable},
         data() {
             return {
                 nickname: ''
@@ -48,7 +52,7 @@
             margin: 0 auto;
         }
 
-        .body {
+        > .body {
             display: flex;
             justify-content: center;
             align-items: center;

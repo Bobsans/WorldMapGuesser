@@ -38,7 +38,7 @@
                 timeHandler: 0,
                 modals: {
                     welcome: {
-                        show: true
+                        show: false
                     },
                     result: {
                         show: false,
@@ -70,20 +70,25 @@
             },
             changeCurrent(dir) {
                 let idx = this.available.indexOf(this.currentId);
-                let newidx = dir === 'prev' ? idx - 1 > 0 ? idx - 1 : this.available.length - 1 : idx + 1 > this.available.length - 1 ? 0 : idx + 1;
+                let newidx = dir === 'prev' ? idx - 1 >= 0 ? idx - 1 : this.available.length - 1 : idx + 1 > this.available.length - 1 ? 0 : idx + 1;
                 this.currentId = this.available[newidx];
             },
 
-            async sendScore({user = this.nickname, result = this.rights.length, time = this.time} = {}) {
+            async sendScore() {
                 try {
-                    console.log({user, result, time});
                     return await (await fetch(`${location.href.trim('/')}/send-score`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({user, result, time})
+                        body: JSON.stringify({
+                            user: this.nickname,
+                            result: this.rights.length,
+                            time: this.time,
+                            rights: this.rights,
+                            wrongs: this.wrongs
+                        })
                     })).json();
                 } catch (e) {
                     console.log(e);
@@ -99,8 +104,9 @@
                 this.modals.result.show = false;
                 this.timeHandler = setInterval(() => { this.time++; }, 1000);
             },
-            onGameStop(result = 'loose') {
+            async onGameStop(result = 'loose') {
                 this.playing = false;
+                await this.sendScore();
                 this.modals.result.show = true;
                 this.modals.result.result = result;
                 clearTimeout(this.timeHandler);
@@ -128,6 +134,8 @@
         mounted() {
             this.reset();
 
+            this.modals.welcome.show = true;
+
             document.addEventListener('keydown', (e) => {
                 if (this.playing) {
                     if (e.key === 'ArrowLeft') {
@@ -143,8 +151,6 @@
 
             this.$bus.$on('change-current', this.onChangeCurrent);
             this.$bus.$on('map-click', this.onMapClick);
-
-            this.$bus.$on('send-score', this.sendScore);
         }
     };
 </script>

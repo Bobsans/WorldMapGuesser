@@ -1,6 +1,6 @@
 <template>
     <transition name="modal">
-        <div class="modal-overlay">
+        <div ref="overlay" class="modal-overlay" @click="close">
             <div class="modal">
                 <div v-if="!noheader" class="header">
                     <slot name="header"/>
@@ -22,6 +22,13 @@
         props: {
             noheader: {type: Boolean, default: false},
             nofooter: {type: Boolean, default: false}
+        },
+        methods: {
+            close(e) {
+                if (e.target === this.$refs.overlay) {
+                    this.$emit('close');
+                }
+            }
         }
     };
 </script>
@@ -52,24 +59,28 @@
                 max-width: 1000px;
             }
         }
-    }
-
-    .modal {
-        min-width: 300px;
-        max-width: 800px;
-        background: @white;
-        padding: 10px;
-        box-shadow: @default-shadow;
-        border-radius: @default-border-radius;
-        margin: 10% auto;
-        transition: @default-transition;
-    }
-
-    .modal-enter, .modal-leave-active {
-        opacity: 0;
 
         .modal {
-            transform: scale(1.2);
+            min-width: 300px;
+            max-width: 800px;
+            background: @white;
+            padding: 10px;
+            box-shadow: @default-shadow;
+            border-radius: @default-border-radius;
+            margin: 10% auto;
+            transition: @default-transition;
+        }
+
+        &.modal-enter-to, &.modal-leave-to {
+            overflow: hidden;
+        }
+
+        &.modal-enter, &.modal-leave-active {
+            opacity: 0;
+
+            .modal {
+                transform: scale(1.2);
+            }
         }
     }
 </style>

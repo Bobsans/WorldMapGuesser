@@ -1,31 +1,19 @@
 <template>
     <div class="result">
+        <div class="logo"></div>
         <div v-if="result === 'win'" class="msg win">YOU WIN!</div>
         <div v-else-if="result === 'loose'" class="msg loose">YOU LOOSE!</div>
-        <div>Score:</div>
-        <div class="score">
-            <span>{{ right }} / {{ total }}</span>
-            <span> | </span>
-            <span>{{ time | secondsToTime}}</span>
+        <div class="scores">
+            <div>
+                <div>Score:</div>
+                <div>{{ right }} / {{ total }}</div>
+            </div>
+            <div>
+                <div>Time:</div>
+                <div>{{ time | secondsToTime}}</div>
+            </div>
         </div>
-        <table class="score-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Score</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(item, idx) in top" :key="idx">
-                    <td>{{ idx + 1 }}</td>
-                    <td>{{ item.user }}</td>
-                    <td>{{ item.result }}</td>
-                    <td>{{ item.time | secondsToTime }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <score-table/>
         <div class="footer">
             <button @click="restart">RESTART</button>
         </div>
@@ -34,9 +22,11 @@
 
 <script>
     import {secondsToTime} from '@/scripts/utils';
+    import ScoreTable from '@/components/ScoreTable';
 
     export default {
         name: 'Result',
+        components: {ScoreTable},
         filters: {secondsToTime},
         props: {
             result: {type: String, default: 'loose'},
@@ -45,19 +35,10 @@
             total: {type: Number, default: 0},
             time: {type: Number, default: 0}
         },
-        data() {
-            return {
-                top: []
-            };
-        },
         methods: {
             restart() {
                 this.$bus.$emit('game-restart');
             }
-        },
-        async mounted() {
-            await this.$bus.$emit('send-score');
-            this.top = await (await fetch(`${location.href.trim('/')}/get-top`)).json();
         }
     };
 </script>
@@ -66,14 +47,29 @@
     @import '~$variables';
 
     .result {
+        position: relative;
         text-align: center;
 
-        .score {
-            font-size: 48px;
+        .scores {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            > div {
+                div {
+                    &:first-child {
+                        margin: 30px 0 10px;
+                    }
+
+                    &:last-child {
+                        font-size: 32px;
+                    }
+                }
+            }
         }
 
         .msg {
-            font-size: 64px;
+            padding-top: 40px;
+            font-size: 48px;
 
             &.win {
                 color: @red;
@@ -84,14 +80,8 @@
             }
         }
 
-        .score-table {
-            min-width: 60%;
-            margin: 20px auto;
-            background: @gray;
-        }
-
         .footer {
-            margin: 50px 0 20px;
+            margin: 30px 0 10px;
         }
     }
 </style>

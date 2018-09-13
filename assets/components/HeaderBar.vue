@@ -10,9 +10,9 @@
             </div>
             <div class="details">
                 <div class="lives">
-                    <span v-for="i in 3" :key="i">{{ lives >= i ? '❤️' : '🖤'}}</span>
+                    <span v-for="i in 3" :key="i" :class="{active: i <= lives}"></span>
                 </div>
-                <div class="score">{{ rights }}/{{ total }}</div>
+                <div class="score">{{ right }}/{{ total }}</div>
                 <div class="time">{{ time | secondsToTime }}</div>
             </div>
         </div>
@@ -29,7 +29,7 @@
         props: {
             playing: {type: Boolean, default: false},
             total: {data: Number, default: 0},
-            rights: {data: Number, default: 0},
+            right: {data: Number, default: 0},
             current: {data: Object, default: () => ({})},
             lives: {type: Number, default: 0},
             time: {type: Number, default: 0}
@@ -108,11 +108,15 @@
                     font-size: 16px;
 
                     span {
-                        padding: 0 2px;
-                        color: @gray;
+                        display: inline-block;
+                        width: 20px;
+                        height: 20px;
+                        background: url('@{image-path}/heart-black.svg') no-repeat center;
+                        background-size: contain;
+                        margin: 0 2px;
 
                         &.active {
-                            color: @red;
+                            background-image: url('@{image-path}/heart.svg');
                         }
                     }
                 }

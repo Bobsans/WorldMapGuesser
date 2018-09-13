@@ -10,9 +10,11 @@ FILESTOCOPY=(
     static
     templates
     main.py
+    logs
 )
 NODELETE=(
     db.sqlite
+    logs
 )
 
 # System variables

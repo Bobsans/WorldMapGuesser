@@ -53,4 +53,4 @@ db = DB(config.DB_FILE)
 
 
 def create_tables():
-    db.query('CREATE TABLE IF NOT EXISTS results (user TEXT, result INT, time INT)').commit()
+    db.query('CREATE TABLE IF NOT EXISTS results (user TEXT, result INT, time INT, rights TEXT, wrongs TEXT)').commit()

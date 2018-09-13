@@ -6,6 +6,7 @@ const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CssUrlRelativePlugin = require('css-url-relative-plugin');
 const {VueLoaderPlugin} = require('vue-loader');
+const PluginIntegration = require('./plugins/plugin-integration');
 
 const utils = require('./utils');
 const config = require('./config');
@@ -18,7 +19,7 @@ module.exports = ({production} = {}) => {
         },
         output: {
             path: utils.destpath(),
-            filename: '[name].js',
+            filename: '[name].[hash:8].js',
             publicPath: config.publicPath
         },
         module: {
@@ -131,11 +132,9 @@ module.exports = ({production} = {}) => {
         },
         plugins: [
             new VueLoaderPlugin(),
-            new MiniCssExtractPlugin({
-                filename: '[name].css',
-                chunkFilename: '[id].css'
-            }),
+            new MiniCssExtractPlugin({filename: '[name].[hash:8].css'}),
             new CssUrlRelativePlugin({root: config.root}),
+            new PluginIntegration({path: utils.destpath()}),
             ...(production ? [
                 new CleanWebpackPlugin([config.destpath], {root: config.root, verbose: false})
             ] : [
