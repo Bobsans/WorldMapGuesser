@@ -16,6 +16,9 @@ NODELETE=(
     db.sqlite
     logs
 )
+GRANTACCESS=(
+    logs
+)
 
 # System variables
 MEPATH="$(pwd)/$(basename $BASH_SOURCE)"
@@ -94,6 +97,13 @@ for file in "${FILESTOCOPY[@]}";
     do cp -rf "${TMPDIR}/$file" "${DESTDIR}/$file";
 done
 check_ret_val
+
+echo -e "${YL}###  GRANTING ACCESS  ###${NC}"
+for file in "${GRANTACCESS[@]}";
+    do chmod 777 "${DESTDIR}/$file";
+done
+check_ret_val
+
 
 echo -e "${YL}###  STARTING SUPERVISOR  ###${NC}"
 supervisorctl start ${SUPERVISORTASK}
