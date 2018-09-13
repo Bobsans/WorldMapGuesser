@@ -77,7 +77,7 @@
             async sendScore({user = this.nickname, result = this.rights.length, time = this.time} = {}) {
                 try {
                     console.log({user, result, time});
-                    return await (await fetch('/send-score', {
+                    return await (await fetch(`${location.trim('/')}/send-score`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
