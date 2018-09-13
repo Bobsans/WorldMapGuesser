@@ -64,9 +64,9 @@ class TemplateLoader:
                 continue
 
             if ext == '.js':
-                output.append(f'<script src="%s"></script>' % file.get('publicPath'))
+                output.append(f'<script src="%s"></script>' % file.get('publicPath').strip('/'))
             elif ext == '.css':
-                output.append(f'<link rel="stylesheet" type="text/css" href="%s">' % file.get('publicPath'))
+                output.append(f'<link rel="stylesheet" type="text/css" href="%s">' % file.get('publicPath').strip('/'))
 
         return '\n'.join(output)
 
