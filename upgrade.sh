@@ -94,7 +94,7 @@ check_ret_val
 
 echo -e "${YL}###  COPYING FILES  ###${NC}"
 for file in "${FILESTOCOPY[@]}";
-    do cp -rf "${TMPDIR}/$file" "${DESTDIR}/$file";
+    do cp -rf "${TMPDIR}/$file" "${DESTDIR}";
 done
 check_ret_val
 
