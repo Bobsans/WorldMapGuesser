@@ -22,7 +22,13 @@
         </table>
 
         <modal class="big preview" v-if="preview.show" @close="preview.show = false">
-            <world-map :ids="ids" :rights="preview.rights" :wrongs="preview.wrongs" preview-mode/>
+            <world-map :ids="ids" :rights="preview.data.rights" :wrongs="preview.data.wrongs" preview-mode/>
+            <div class="info">
+                <div>Position: <span>{{ preview.data.position }}</span></div>
+                <div>User: <span>{{ preview.data.user }}</span></div>
+                <div>Result: <span>{{ preview.data.result }}</span></div>
+                <div>Time: <span>{{ preview.data.time | secondsToTime }}</span></div>
+            </div>
         </modal>
     </div>
 </template>
@@ -42,8 +48,7 @@
                 data: [],
                 preview: {
                     show: false,
-                    rights: [],
-                    wrongs: []
+                    data: {}
                 }
             };
         },
@@ -57,8 +62,7 @@
         },
         methods: {
             viewResultMap(item) {
-                this.preview.rights = item.rights;
-                this.preview.wrongs = item.wrongs;
+                this.preview.data = {...item, position: this.data.indexOf(item) + 1};
                 this.preview.show = true;
             }
         },
@@ -107,8 +111,32 @@
                 height: 70%;
 
                 .body {
+                    position: relative;
                     display: grid;
                     height: 100%;
+
+                    .info {
+                        position: absolute;
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        background: @white;
+                        border-radius: @default-border-radius;
+                        box-shadow: @default-shadow;
+                        width: 80%;
+                        bottom: -62px;
+                        left: 50%;
+                        transform: translateX(-50%);
+
+                        > div {
+                            text-align: center;
+                            padding: 10px;
+
+                            span {
+                                display: block;
+                                font-size: 32px;
+                            }
+                        }
+                    }
                 }
             }
         }
