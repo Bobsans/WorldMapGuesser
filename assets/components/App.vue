@@ -67,6 +67,7 @@
                 this.lives = 3;
                 this.time = 0;
                 this.currentId = this.ids[0];
+                clearTimeout(this.timeHandler);
             },
             changeCurrent(dir) {
                 let idx = this.available.indexOf(this.currentId);
@@ -112,18 +113,20 @@
                 clearTimeout(this.timeHandler);
             },
             onMapClick(item) {
-                let idx = this.currentId;
-                this.$bus.$emit('change-draw-order', idx);
-                this.changeCurrent('next');
+                if (this.lives) {
+                    let idx = this.currentId;
+                    this.$bus.$emit('change-draw-order', idx);
+                    this.changeCurrent('next');
 
-                if (idx === item.id) {
-                    this.rights.push(idx);
-                } else {
-                    this.wrongs.push(idx);
-                    this.lives--;
+                    if (idx === item.id) {
+                        this.rights.push(idx);
+                    } else {
+                        this.wrongs.push(idx);
+                        this.lives--;
 
-                    if (this.lives <= 0) {
-                        this.onGameStop();
+                        if (this.lives <= 0) {
+                            setTimeout(() => this.onGameStop(), 500);
+                        }
                     }
                 }
             },

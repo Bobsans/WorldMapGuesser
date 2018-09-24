@@ -1,27 +1,30 @@
 <template>
     <header>
         <div class="logo"></div>
-        <div v-if="playing" class="controls">
-            <div></div>
-            <div class="country-selector">
-                <div class="prev" @click="changeCurrent('prev')">&lt;</div>
-                <div class="current">{{ current.name }}</div>
-                <div class="next" @click="changeCurrent('next')">&gt;</div>
-            </div>
-            <div class="details">
-                <div class="lives">
-                    <span v-for="i in 3" :key="i" :class="{active: i <= lives}"></span>
+        <transition name="header-bar">
+            <div v-if="playing" class="controls">
+                <div class="buttons">
+                    <div class="restart" @click="restart" title="Restart"></div>
                 </div>
-                <div class="score">{{ right }}/{{ total }}</div>
-                <div class="time">{{ time | secondsToTime }}</div>
+                <div class="country-selector">
+                    <div class="prev" @click="changeCurrent('prev')">&lt;</div>
+                    <div class="current">{{ current.name }}</div>
+                    <div class="next" @click="changeCurrent('next')">&gt;</div>
+                </div>
+                <div class="details">
+                    <div class="lives">
+                        <span v-for="i in 3" :key="i" :class="{active: i <= lives}"></span>
+                    </div>
+                    <div class="score">{{ right }}/{{ total }}</div>
+                    <div class="time">{{ time | secondsToTime }}</div>
+                </div>
             </div>
-        </div>
+        </transition>
     </header>
 </template>
 
 <script>
     import {secondsToTime} from '@/scripts/utils';
-    import countries from '@/data/countries';
 
     export default {
         name: 'Header',
@@ -37,14 +40,12 @@
         data() {
             return {};
         },
-        computed: {
-            totalCountries() {
-                return Object.keys(countries).length;
-            }
-        },
         methods: {
             changeCurrent(dir) {
                 this.$bus.$emit('change-current', {dir});
+            },
+            restart() {
+                this.$bus.$emit('game-restart');
             }
         }
     };
@@ -67,6 +68,22 @@
         .controls {
             display: grid;
             grid-template-columns: 1fr min-content 350px;
+            transition: @default-transition;
+
+            .buttons {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+
+                .restart {
+                    width: 20px;
+                    height: 20px;
+                    margin-right: 25px;
+                    background: url('@{image-path}/restart.png') no-repeat center;
+                    background-size: contain;
+                    cursor: pointer;
+                }
+            }
 
             .country-selector {
                 display: grid;
@@ -120,6 +137,10 @@
                         }
                     }
                 }
+            }
+
+            &.header-bar-enter, &.header-bar-leave-active {
+                opacity: 0;
             }
         }
     }
