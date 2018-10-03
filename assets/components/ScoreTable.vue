@@ -4,7 +4,7 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>User</th>
+                    <th>Player</th>
                     <th>Score</th>
                     <th>Time</th>
                     <th>Map</th>
@@ -25,7 +25,7 @@
             <world-map :ids="ids" :rights="preview.data.rights" :wrongs="preview.data.wrongs" preview-mode/>
             <div class="info">
                 <div>Position: <span>{{ preview.data.position }}</span></div>
-                <div>User: <span>{{ preview.data.user }}</span></div>
+                <div>Player: <span>{{ preview.data.user }}</span></div>
                 <div>Result: <span>{{ preview.data.result }}</span></div>
                 <div>Time: <span>{{ preview.data.time | secondsToTime }}</span></div>
             </div>
