@@ -67,7 +67,7 @@
             padding: 10px;
             box-shadow: @default-shadow;
             border-radius: @default-border-radius;
-            margin: 10% auto;
+            margin: 10% auto 0;
             transition: @default-transition;
         }
 

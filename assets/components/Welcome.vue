@@ -3,7 +3,7 @@
         <div class="logo"></div>
         <div class="body">
             <div class="start-form">
-                <input type="text" v-model="nickname" placeholder="Nickname" @keydown="onKeydown">
+                <input ref="nickname" type="text" v-model="nickname" placeholder="Nickname" @keydown="onKeydown">
                 <button :disabled="!nickname" @click="start">START</button>
             </div>
         </div>
@@ -43,6 +43,9 @@
                     this.start();
                 }
             }
+        },
+        mounted() {
+            this.$refs.nickname.focus();
         }
     };
 </script>
