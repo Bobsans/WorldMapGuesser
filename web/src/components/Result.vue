@@ -12,11 +12,13 @@
         Time:<strong>{{ secondsToTime(time) }}</strong>
       </p>
     </div>
-    <p v-if="saveStatus === 'saving'" class="status-message" role="status">
-      Saving result…
-    </p>
-    <p v-else-if="saveStatus === 'error'" class="status-message status-error" role="alert">
-      {{ saveError }}
+    <p
+      class="game-result-status status-message"
+      :class="{ 'status-error': saveStatus === 'error' }"
+      :role="saveStatus === 'error' ? 'alert' : 'status'"
+    >
+      <template v-if="saveStatus === 'saving'">Saving result…</template>
+      <template v-else-if="saveStatus === 'error'">{{ saveError }}</template>
     </p>
     <score-table :countries="countries" :revision="scoreRevision" />
     <button class="game-result-restart" type="button" @click="emit('restart')">
@@ -77,6 +79,11 @@
         margin-top: 10px;
         font-size: clamp(20px, 4vw, 32px);
       }
+    }
+
+    .game-result-status {
+      min-height: 20px;
+      line-height: 20px;
     }
 
     .game-result-restart {

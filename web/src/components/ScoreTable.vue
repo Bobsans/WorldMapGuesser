@@ -1,14 +1,14 @@
 <template>
-  <section class="score-table" aria-label="Leaderboard">
-    <p v-if="loading" class="status-message" role="status">
+  <section class="score-table" aria-label="Leaderboard" :aria-busy="loading">
+    <p v-if="loading" class="visually-hidden" role="status">
       Loading leaderboard…
     </p>
-    <div v-else-if="error" class="status-message status-error" role="alert">
-      <p>{{ error }}</p>
-      <button type="button" @click="reload">Reload leaderboard</button>
-    </div>
-    <div v-if="scores.length" class="score-table-scroll">
-      <table>
+    <div class="score-table-scroll">
+      <div v-if="error" class="status-message status-error" role="alert">
+        <p>{{ error }}</p>
+        <button type="button" @click="reload">Reload leaderboard</button>
+      </div>
+      <table v-if="loading || scores.length">
         <caption class="visually-hidden">
           Top 10 players
         </caption>
@@ -21,7 +21,14 @@
             <th scope="col">Map</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="loading" aria-hidden="true">
+          <tr v-for="row in 10" :key="row">
+            <td v-for="column in 5" :key="column">
+              <span class="score-table-skeleton" />
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
           <tr v-for="(item, index) in scores" :key="index">
             <td>{{ index + 1 }}</td>
             <td>{{ item.user }}</td>
@@ -41,6 +48,7 @@
           </tr>
         </tbody>
       </table>
+      <p v-else-if="!error" class="status-message">No results yet.</p>
     </div>
     <teleport to="body">
       <transition name="game-modal" appear>
@@ -129,25 +137,29 @@
   .score-table {
     display: flex;
     flex-direction: column;
-    min-height: 84px;
+    min-height: 0;
     margin-top: 20px;
     overflow-wrap: anywhere;
 
     .score-table-scroll {
+      height: min(240px, 30dvh);
       min-height: 0;
-      max-height: min(240px, 30dvh);
       overflow: auto;
+      scrollbar-gutter: stable;
     }
 
     table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       font-size: 14px;
+      line-height: 20px;
     }
 
     th,
     td {
-      padding: 6px 4px;
+      height: 36px;
+      padding: 3px 4px;
       text-align: center;
       border-bottom: v.$border;
     }
@@ -155,15 +167,57 @@
     th {
       position: sticky;
       top: 0;
+      height: 32px;
+      white-space: nowrap;
       background: v.$white;
+
+      &:nth-child(1) {
+        width: 10%;
+      }
+
+      &:nth-child(2) {
+        width: auto;
+      }
+
+      &:nth-child(3) {
+        width: max(48px, 15%);
+      }
+
+      &:nth-child(5) {
+        width: 15%;
+      }
+
+      &:nth-child(4) {
+        width: 25%;
+      }
     }
 
     td:nth-child(2) {
-      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .score-table-skeleton {
+      display: block;
+      width: 75%;
+      height: 12px;
+      margin: 0 auto;
+      background: v.$gray;
+      border-radius: v.$radius;
+      animation: score-table-pulse 1.2s ease-in-out infinite;
     }
 
     .score-table-preview {
-      padding: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      min-width: 28px;
+      height: 28px;
+      min-height: 28px;
+      padding: 4px;
+      vertical-align: middle;
       background: transparent;
       border: 0;
 
@@ -177,6 +231,18 @@
       table {
         font-size: 12px;
       }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .score-table-skeleton {
+        animation: none;
+      }
+    }
+  }
+
+  @keyframes score-table-pulse {
+    50% {
+      opacity: 0.4;
     }
   }
 
