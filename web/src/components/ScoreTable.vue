@@ -137,7 +137,7 @@
   .score-table {
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    min-height: 84px;
     margin-top: 20px;
     overflow-wrap: anywhere;
 
