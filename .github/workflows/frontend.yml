@@ -101,7 +101,7 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
-          SSH_PATH: ${{ vars.SSH_PATH }}
+          SSH_PATH: /home/darkboy/services/world-map-guesser
           DEPLOY_SERVICE: ${{ vars.DEPLOY_SERVICE }}
           DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
         shell: bash
