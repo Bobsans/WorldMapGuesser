@@ -14,7 +14,6 @@ server/
   go.mod
   go.sum
   test-package.sh
-  upgrade.sh
 web/
   .editorconfig
   .gitignore

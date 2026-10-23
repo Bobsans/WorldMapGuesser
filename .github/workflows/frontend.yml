@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: frontend-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: application-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' || github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -48,6 +48,19 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: bash server/test-package.sh bin/world-map-guesser
         working-directory: .
+      - name: Prepare checked application artifact
+        working-directory: bin
+        run: |
+          sha256sum world-map-guesser > world-map-guesser.sha256
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: application-${{ github.sha }}
+          path: |
+            bin/world-map-guesser
+            bin/world-map-guesser.sha256
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: failure()
         with:
@@ -57,3 +70,77 @@ jobs:
             web/test-results/
             ${{ runner.temp }}/world-map-guesser.log
           if-no-files-found: ignore
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Refuse stale deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current_main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          test "$current_main" = "$GITHUB_SHA"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: application-${{ github.sha }}
+          path: artifact
+          digest-mismatch: error
+      - name: Publish checked application
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+          SSH_PATH: ${{ vars.SSH_PATH }}
+          DEPLOY_SERVICE: ${{ vars.DEPLOY_SERVICE }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$SSH_USER" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]]
+          [[ "$SSH_PATH" =~ ^/[a-zA-Z0-9_./-]+$ && "$SSH_PATH" != / && "$SSH_PATH" != */ ]]
+          [[ ! "$SSH_PATH" =~ /\.\.?(/|$) ]]
+          [[ "$DEPLOY_SERVICE" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_:@.-]*\.service$ ]]
+          [[ "$DEPLOY_PORT" =~ ^[0-9]{1,5}$ && "$DEPLOY_PORT" -ge 1 && "$DEPLOY_PORT" -le 65535 ]]
+          (cd artifact && sha256sum --check world-map-guesser.sha256)
+          checksum=$(sha256sum artifact/world-map-guesser | cut -d ' ' -f 1)
+          umask 077
+          ssh_dir=$(mktemp -d)
+          trap 'rm -rf -- "$ssh_dir"' EXIT
+          printf '%s\n' "$SSH_KEY" > "$ssh_dir/key"
+          printf '%s %s\n' "$SSH_HOST" "$SSH_HOST_KEY" > "$ssh_dir/known_hosts"
+          ssh-keygen -l -f "$ssh_dir/known_hosts" > /dev/null
+          ssh_options=(-i "$ssh_dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$ssh_dir/known_hosts" -o ConnectTimeout=15)
+          target="$SSH_USER@$SSH_HOST"
+          scp "${ssh_options[@]}" artifact/world-map-guesser "$target:$SSH_PATH/world-map-guesser.upload"
+          ssh "${ssh_options[@]}" "$target" bash -s -- "$SSH_PATH" "$checksum" "$DEPLOY_SERVICE" "$DEPLOY_PORT" "$GITHUB_SHA" <<'REMOTE'
+          set -euo pipefail
+          app_dir=$1
+          checksum=$2
+          service=$3
+          port=$4
+          revision=$5
+          upload="$app_dir/world-map-guesser.upload"
+          trap 'rm -f -- "$upload"' EXIT
+          test -f "$app_dir/db.sqlite"
+          printf '%s  %s\n' "$checksum" "$upload" | sha256sum --check
+          chmod 755 "$upload"
+          chown --reference="$app_dir/db.sqlite" "$upload"
+          mv --force --no-target-directory -- "$upload" "$app_dir/world-map-guesser"
+          systemctl reset-failed "$service"
+          systemctl restart "$service"
+          systemctl is-active --quiet "$service"
+          curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --max-time 3 "http://127.0.0.1:$port/api/health" |
+            grep --fixed-strings "\"version\":\"$revision\""
+          REMOTE
