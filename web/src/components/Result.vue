@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
   import type { Countries, Outcome, SaveStatus } from '@/types';
-  import { secondsToTime } from '@/scripts/utils';
+  import { secondsToTime } from '@/utils/time';
   import ScoreTable from '@/components/ScoreTable.vue';
 
   defineProps<{
@@ -57,7 +57,7 @@
     }
 
     .game-result-win {
-      color: #27823b;
+      color: #27823B;
     }
 
     .game-result-scores {

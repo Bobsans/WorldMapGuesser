@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:8301/static/',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8301/',
     trace: 'retain-on-failure',
   },
   projects: [
@@ -18,10 +18,10 @@ export default defineConfig({
       use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium' },
     },
   ],
-  webServer: {
+  webServer: process.env.E2E_BASE_URL ? undefined : {
     command: 'node node_modules/vite/bin/vite.js preview',
     cwd: fileURLToPath(new URL('.', import.meta.url)),
-    url: 'http://127.0.0.1:8301/static/',
+    url: 'http://127.0.0.1:8301/',
     reuseExistingServer: false,
   },
 });

@@ -12,48 +12,45 @@
 <script setup lang="ts">
   import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
 
-  const props = withDefaults(
-    defineProps<{
-      label: string;
-      size?: 'small' | 'large';
-      dismissible?: boolean;
-    }>(),
-    {
-      size: 'large',
-      dismissible: false,
-    },
-  );
+  const props = withDefaults(defineProps<{
+    label: string;
+    size?: 'small' | 'large';
+    dismissible?: boolean;
+  }>(), {
+    size: 'large',
+    dismissible: false,
+  });
 
   const emit = defineEmits<{
     close: [];
   }>();
 
   const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+
   const close = (): void => {
     if (props.dismissible) {
       emit('close');
     }
   };
+
   const onBackdrop = (event: MouseEvent): void => {
     if (event.target !== dialog.value || !dialog.value) {
       return;
     }
+
     const rect = dialog.value.getBoundingClientRect();
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    ) {
+
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
       close();
     }
   };
+
   onMounted(() => dialog.value?.showModal());
   onBeforeUnmount(() => dialog.value?.close());
 </script>
 
 <style lang="scss">
-  @use '@assets/styles/variables' as v;
+  @use '@/styles/variables' as v;
 
   .game-modal {
     position: fixed;

@@ -6,10 +6,17 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import attributeLayout from './eslint-rules/attribute-layout.js';
 import multilineTypeMembers from './eslint-rules/multiline-type-members.js';
+import compactLayout from './eslint-rules/compact-layout.js';
 
 const componentMacro = {
   selector: ':matches(ExpressionStatement, VariableDeclaration):has(CallExpression[callee.name=/^(defineProps|defineEmits|defineOptions)$/])',
 };
+
+const functionDeclaration = {
+  selector: ':matches(VariableDeclaration[declarations.0.init.type=/^(ArrowFunctionExpression|FunctionExpression)$/], ExportNamedDeclaration[declaration.declarations.0.init.type=/^(ArrowFunctionExpression|FunctionExpression)$/])',
+};
+
+const assertion = { selector: 'ExpressionStatement:has(CallExpression[callee.name="expect"])' };
 
 export default [
   {
@@ -22,6 +29,7 @@ export default [
     plugins: {
       '@stylistic': stylistic,
       'project-types': { rules: { 'multiline-members': multilineTypeMembers } },
+      'project-layout': { rules: { compact: compactLayout } },
     },
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
     rules: {
@@ -36,6 +44,7 @@ export default [
         message: 'Use PascalCase for component imports.',
       }],
       'project-types/multiline-members': 'error',
+      'project-layout/compact': ['error', 150],
       '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
@@ -58,6 +67,15 @@ export default [
         'error',
         { blankLine: 'always', prev: 'import', next: '*' },
         { blankLine: 'never', prev: 'import', next: 'import' },
+        { blankLine: 'always', prev: 'block-like', next: '*' },
+        { blankLine: 'always', prev: '*', next: 'block-like' },
+        { blankLine: 'always', prev: functionDeclaration, next: '*' },
+        { blankLine: 'always', prev: '*', next: functionDeclaration },
+        { blankLine: 'always', prev: 'interface', next: '*' },
+        { blankLine: 'always', prev: '*', next: 'interface' },
+        { blankLine: 'always', prev: assertion, next: '*' },
+        { blankLine: 'always', prev: '*', next: assertion },
+        { blankLine: 'any', prev: assertion, next: assertion },
         { blankLine: 'always', prev: componentMacro, next: '*' },
         { blankLine: 'always', prev: '*', next: componentMacro },
       ],
@@ -74,6 +92,8 @@ export default [
   {
     files: ['src/**/*.{ts,vue}', 'tests/**/*.ts'],
     rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports', fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
       'no-restricted-imports': ['error', {
         patterns: [{ group: ['./*', '../*'], message: 'Use @/ or @assets/ aliases for frontend imports.' }],
       }],
@@ -95,10 +115,12 @@ export default [
             create: (context) => ({
               Program: () => {
                 const fragment = context.sourceCode.parserServices.getDocumentFragment?.();
+
                 for (const block of fragment?.children ?? []) {
                   if (block.type !== 'VElement' || block.name !== 'style') {
                     continue;
                   }
+
                   for (const attribute of block.startTag.attributes) {
                     if (attribute.key.name === 'scoped') {
                       context.report({ node: attribute, messageId: 'scoped' });

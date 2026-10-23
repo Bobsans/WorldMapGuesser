@@ -57,6 +57,7 @@
   }>();
 
   const nickname = ref('');
+
   const start = (): void => {
     if (!props.loading && !props.error && nickname.value.trim()) {
       emit('start', nickname.value.trim());

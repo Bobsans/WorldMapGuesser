@@ -1,0 +1,25 @@
+{
+  "vue.format.script.initialIndent": true,
+  "vue.format.style.initialIndent": true,
+  "eslint.validate": ["javascript", "typescript", "vue", "html"],
+  "eslint.workingDirectories": ["./web"],
+  "stylelint.validate": ["css", "scss", "vue"],
+  "[javascript][typescript][vue][scss][html]": {
+    "editor.rulers": [150],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.fixAll.stylelint": "explicit"
+    }
+  },
+  "[vue]": {
+    "editor.formatOnType": false,
+    "editor.autoIndent": "brackets",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  }
+}

@@ -1,4 +1,4 @@
-name: Frontend
+name: Application
 
 on:
   push:
@@ -26,13 +26,28 @@ jobs:
           node-version-file: web/.node-version
           cache: npm
           cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run check
-      - run: python3 -m unittest discover -s server/tests -v
+      - run: go test -tags dev -race ./...
+        working-directory: server
+      - run: go vet -tags dev ./...
+        working-directory: server
+      - run: test -z "$(gofmt -l .)"
+        working-directory: server
+      - run: go run ./cmd/build -target linux/amd64
+        working-directory: server
+      - run: go test ./...
+        working-directory: server
+      - run: file bin/world-map-guesser | grep 'statically linked'
         working-directory: .
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - run: bash server/test-package.sh bin/world-map-guesser
+        working-directory: .
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: failure()
         with:
@@ -40,4 +55,5 @@ jobs:
           path: |
             web/playwright-report/
             web/test-results/
+            ${{ runner.temp }}/world-map-guesser.log
           if-no-files-found: ignore

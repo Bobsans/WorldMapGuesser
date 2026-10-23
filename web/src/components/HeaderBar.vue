@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
   import type { Country, Direction } from '@/types';
-  import { secondsToTime } from '@/scripts/utils';
+  import { secondsToTime } from '@/utils/time';
   import heart from '@assets/images/heart.svg';
   import emptyHeart from '@assets/images/heart-black.svg';
 
@@ -51,15 +51,14 @@
 </script>
 
 <style lang="scss">
-  @use '@assets/styles/variables' as v;
+  @use '@/styles/variables' as v;
 
   .game-header {
     z-index: 1;
     display: flex;
     align-items: center;
     min-height: 80px;
-    padding: 8px max(12px, env(safe-area-inset-right)) 8px
-      max(12px, env(safe-area-inset-left));
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
     background: v.$white;
     box-shadow: v.$shadow;
 

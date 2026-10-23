@@ -1,7 +1,13 @@
 export default {
   extends: ['stylelint-config-standard-scss'],
-  plugins: ['@stylistic/stylelint-plugin'],
+  plugins: ['@stylistic/stylelint-plugin', './stylelint-rules/project-style.js'],
   rules: {
+    'color-hex-length': 'long',
+    '@stylistic/color-hex-case': 'upper',
+    'scss/dollar-variable-colon-space-after': 'at-least-one-space',
+    'scss/dollar-variable-empty-line-before': null,
+    'project/sass-variable-alignment': true,
+    'project/compact-values': 150,
     '@stylistic/indentation': 2,
     '@stylistic/block-opening-brace-space-before': 'always',
     '@stylistic/block-opening-brace-newline-after': 'always',

@@ -69,18 +69,15 @@
 <script setup lang="ts">
   import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
   import type { Countries, Score } from '@/types';
-  import { getScores } from '@/scripts/api';
-  import { secondsToTime } from '@/scripts/utils';
+  import { getScores } from '@/api/client';
+  import { secondsToTime } from '@/utils/time';
   import Modal from '@/components/Modal.vue';
   import WorldMap from '@/components/WorldMap.vue';
 
-  const props = withDefaults(
-    defineProps<{
-      countries: Countries;
-      revision?: number;
-    }>(),
-    { revision: 0 },
-  );
+  const props = withDefaults(defineProps<{
+    countries: Countries;
+    revision?: number;
+  }>(), { revision: 0 });
 
   const scores = shallowRef<Score[]>([]);
   const loading = ref(false);
@@ -93,23 +90,23 @@
   >(null);
   const ids = computed(() => Object.keys(props.countries));
   let controller: AbortController | undefined;
+
   const reload = async (): Promise<void> => {
     controller?.abort();
     const request = new AbortController();
     controller = request;
     loading.value = true;
     error.value = '';
+
     try {
       const data = await getScores(request.signal);
+
       if (!request.signal.aborted) {
         scores.value = data;
       }
     } catch (failure) {
       if (!request.signal.aborted) {
-        error.value =
-          failure instanceof Error
-            ? failure.message
-            : 'The leaderboard could not be loaded.';
+        error.value = failure instanceof Error ? failure.message : 'The leaderboard could not be loaded.';
       }
     } finally {
       if (!request.signal.aborted) {
@@ -117,18 +114,15 @@
       }
     }
   };
-  watch(
-    () => props.revision,
-    () => {
-      void reload();
-    },
-    { immediate: true },
-  );
+
+  watch(() => props.revision, () => {
+    void reload();
+  }, { immediate: true });
   onBeforeUnmount(() => controller?.abort());
 </script>
 
 <style lang="scss">
-  @use '@assets/styles/variables' as v;
+  @use '@/styles/variables' as v;
 
   .score-table {
     margin-top: 20px;

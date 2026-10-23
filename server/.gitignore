@@ -1,0 +1,4 @@
+/internal/webui/dist/
+/internal/webui/.dist-*/
+/db.sqlite
+/db.sqlite-*
