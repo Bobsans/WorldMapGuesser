@@ -1,0 +1,26 @@
+export default {
+  extends: ['stylelint-config-standard-scss'],
+  plugins: ['@stylistic/stylelint-plugin'],
+  rules: {
+    '@stylistic/indentation': 2,
+    '@stylistic/block-opening-brace-space-before': 'always',
+    '@stylistic/block-opening-brace-newline-after': 'always',
+    '@stylistic/block-closing-brace-newline-before': 'always',
+    '@stylistic/block-closing-brace-newline-after': 'always',
+    '@stylistic/declaration-colon-space-before': 'never',
+    '@stylistic/declaration-colon-space-after': 'always',
+    '@stylistic/declaration-block-trailing-semicolon': 'always',
+    '@stylistic/declaration-block-semicolon-newline-after': 'always',
+    '@stylistic/selector-list-comma-newline-after': 'always',
+    '@stylistic/no-eol-whitespace': true,
+    '@stylistic/max-empty-lines': 1,
+    '@stylistic/linebreaks': 'unix',
+    'rule-empty-line-before': ['always-multi-line', { except: ['first-nested'], ignore: ['after-comment'] }],
+  },
+  overrides: [{
+    files: ['**/*.vue'],
+    customSyntax: 'postcss-html',
+    rules: { '@stylistic/indentation': [2, { baseIndentLevel: 1 }] },
+  }],
+  ignoreFiles: ['dist/**', 'node_modules/**'],
+};
