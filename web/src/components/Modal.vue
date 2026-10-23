@@ -1,16 +1,14 @@
 <template>
-  <teleport to="body">
-    <dialog ref="dialog" class="game-modal" :class="`game-modal-${size}`" :aria-label="label" @cancel.prevent="close" @click="onBackdrop">
-      <button v-if="dismissible" class="game-modal-close" type="button" aria-label="Close map preview" @click="close">
-        ×
-      </button>
-      <slot />
-    </dialog>
-  </teleport>
+  <dialog ref="dialog" class="game-modal" :class="`game-modal-${size}`" :aria-label="label" @cancel.prevent="close" @click="onBackdrop">
+    <button v-if="dismissible" class="game-modal-close" type="button" aria-label="Close map preview" @click="close">
+      ×
+    </button>
+    <slot />
+  </dialog>
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
+  import { onMounted, useTemplateRef } from 'vue';
 
   const props = withDefaults(defineProps<{
     label: string;
@@ -46,7 +44,6 @@
   };
 
   onMounted(() => dialog.value?.showModal());
-  onBeforeUnmount(() => dialog.value?.close());
 </script>
 
 <style lang="scss">
@@ -65,8 +62,32 @@
     border-radius: v.$radius;
     box-shadow: v.$shadow;
 
+    &[open] {
+      display: flex;
+      flex-direction: column;
+    }
+
     &::backdrop {
       background: rgb(0 0 0 / 15%);
+    }
+
+    &.game-modal-enter-active,
+    &.game-modal-leave-active {
+      transition: opacity 180ms ease, transform 180ms ease;
+
+      &::backdrop {
+        transition: background-color 180ms ease;
+      }
+    }
+
+    &.game-modal-enter-from,
+    &.game-modal-leave-to {
+      opacity: 0;
+      transform: translateY(-16px);
+
+      &::backdrop {
+        background: rgb(0 0 0 / 0%);
+      }
     }
 
     &.game-modal-small {
@@ -79,13 +100,25 @@
       right: 4px;
       z-index: 1;
       color: v.$ink;
-      background: v.$white;
+      padding: 0;
+      background: transparent;
       border: 0;
       font-size: 28px;
     }
 
     @media (width <= 480px) {
       padding: 16px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      &.game-modal-enter-active,
+      &.game-modal-leave-active {
+        transition: none;
+
+        &::backdrop {
+          transition: none;
+        }
+      }
     }
   }
 </style>

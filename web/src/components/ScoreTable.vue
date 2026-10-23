@@ -7,62 +7,68 @@
       <p>{{ error }}</p>
       <button type="button" @click="reload">Reload leaderboard</button>
     </div>
-    <table v-if="scores.length">
-      <caption class="visually-hidden">
-        Top 10 players
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Player</th>
-          <th scope="col">Score</th>
-          <th scope="col">Time</th>
-          <th scope="col">Map</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in scores" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td>{{ item.user }}</td>
-          <td>{{ item.result }}</td>
-          <td>{{ secondsToTime(item.time) }}</td>
-          <td>
-            <button
-              class="score-table-preview"
-              type="button"
-              :aria-label="`View map for ${item.user}`"
-              :disabled="!ids.length"
-              @click="preview = { ...item, position: index + 1 }"
-            >
-              <img src="@assets/images/search.svg" alt="" />
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <modal v-if="preview" label="Saved game map" dismissible @close="preview = null">
-      <div class="score-preview-map">
-        <world-map :countries="countries" :ids="ids" :rights="preview.rights" :wrongs="preview.wrongs" />
-      </div>
-      <dl class="score-preview-info">
-        <div>
-          <dt>Position</dt>
-          <dd>{{ preview.position }}</dd>
-        </div>
-        <div>
-          <dt>Player</dt>
-          <dd>{{ preview.user }}</dd>
-        </div>
-        <div>
-          <dt>Result</dt>
-          <dd>{{ preview.result }}</dd>
-        </div>
-        <div>
-          <dt>Time</dt>
-          <dd>{{ secondsToTime(preview.time) }}</dd>
-        </div>
-      </dl>
-    </modal>
+    <div v-if="scores.length" class="score-table-scroll">
+      <table>
+        <caption class="visually-hidden">
+          Top 10 players
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Player</th>
+            <th scope="col">Score</th>
+            <th scope="col">Time</th>
+            <th scope="col">Map</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in scores" :key="index">
+            <td>{{ index + 1 }}</td>
+            <td>{{ item.user }}</td>
+            <td>{{ item.result }}</td>
+            <td>{{ secondsToTime(item.time) }}</td>
+            <td>
+              <button
+                class="score-table-preview"
+                type="button"
+                :aria-label="`View map for ${item.user}`"
+                :disabled="!ids.length"
+                @click="preview = { ...item, position: index + 1 }"
+              >
+                <img src="@assets/images/search.svg" alt="" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <teleport to="body">
+      <transition name="game-modal" appear>
+        <modal v-if="preview" label="Saved game map" dismissible @close="preview = null">
+          <div class="score-preview-map">
+            <world-map :countries="countries" :ids="ids" :rights="preview.rights" :wrongs="preview.wrongs" />
+          </div>
+          <dl class="score-preview-info">
+            <div>
+              <dt>Position</dt>
+              <dd>{{ preview.position }}</dd>
+            </div>
+            <div>
+              <dt>Player</dt>
+              <dd>{{ preview.user }}</dd>
+            </div>
+            <div>
+              <dt>Result</dt>
+              <dd>{{ preview.result }}</dd>
+            </div>
+            <div>
+              <dt>Time</dt>
+              <dd>{{ secondsToTime(preview.time) }}</dd>
+            </div>
+          </dl>
+        </modal>
+      </transition>
+    </teleport>
   </section>
 </template>
 
@@ -82,12 +88,7 @@
   const scores = shallowRef<Score[]>([]);
   const loading = ref(false);
   const error = ref('');
-  const preview = shallowRef<
-    | (Score & {
-      position: number;
-    })
-    | null
-  >(null);
+  const preview = shallowRef<(Score & { position: number }) | null>(null);
   const ids = computed(() => Object.keys(props.countries));
   let controller: AbortController | undefined;
 
@@ -118,6 +119,7 @@
   watch(() => props.revision, () => {
     void reload();
   }, { immediate: true });
+
   onBeforeUnmount(() => controller?.abort());
 </script>
 
@@ -125,8 +127,17 @@
   @use '@/styles/variables' as v;
 
   .score-table {
+    display: flex;
+    flex-direction: column;
+    min-height: 84px;
     margin-top: 20px;
     overflow-wrap: anywhere;
+
+    .score-table-scroll {
+      min-height: 0;
+      max-height: min(240px, 30dvh);
+      overflow: auto;
+    }
 
     table {
       width: 100%;
@@ -139,6 +150,12 @@
       padding: 6px 4px;
       text-align: center;
       border-bottom: v.$border;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: v.$white;
     }
 
     td:nth-child(2) {
@@ -170,6 +187,10 @@
 
     .world-map {
       height: 100%;
+    }
+
+    @media (width <= 480px) {
+      margin-top: 32px;
     }
   }
 

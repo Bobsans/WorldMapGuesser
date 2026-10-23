@@ -67,6 +67,14 @@
 
 <style lang="scss">
   .welcome-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    > :not(.score-table) {
+      flex-shrink: 0;
+    }
+
     .welcome-logo {
       display: block;
       width: min(100%, 340px);
@@ -123,6 +131,14 @@
       .welcome-help {
         grid-template-columns: 1fr;
         gap: 8px;
+
+        h2 {
+          margin-bottom: 8px;
+        }
+
+        p {
+          margin: 8px 0;
+        }
       }
     }
   }

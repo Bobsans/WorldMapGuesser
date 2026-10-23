@@ -19,23 +19,27 @@
       :interactive="game.status === 'playing'"
       @answer="answer"
     />
-    <modal v-if="game.status === 'ready'" label="Welcome to World Map Guesser" size="small">
-      <welcome :countries="countries" :loading="loading" :error="loadError" @start="start" @retry="reloadMap" />
-    </modal>
-    <modal v-else-if="outcome" label="Game result">
-      <result
-        :outcome="outcome"
-        :user="nickname"
-        :right="game.rights.length"
-        :total="ids.length"
-        :time="elapsed"
-        :countries="countries"
-        :save-status="saveStatus"
-        :save-error="saveError"
-        :score-revision="scoreRevision"
-        @restart="start()"
-      />
-    </modal>
+    <teleport to="body">
+      <transition name="game-modal" appear>
+        <modal v-if="game.status === 'ready'" label="Welcome to World Map Guesser" size="small">
+          <welcome :countries="countries" :loading="loading" :error="loadError" @start="start" @retry="reloadMap" />
+        </modal>
+        <modal v-else-if="outcome" label="Game result">
+          <result
+            :outcome="outcome"
+            :user="nickname"
+            :right="game.rights.length"
+            :total="ids.length"
+            :time="elapsed"
+            :countries="countries"
+            :save-status="saveStatus"
+            :save-error="saveError"
+            :score-revision="scoreRevision"
+            @restart="start()"
+          />
+        </modal>
+      </transition>
+    </teleport>
   </main>
 </template>
 
@@ -187,6 +191,11 @@
 
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       event.preventDefault();
+
+      if (target instanceof HTMLButtonElement) {
+        target.blur();
+      }
+
       navigate(event.key === 'ArrowLeft' ? 'prev' : 'next');
     }
   };

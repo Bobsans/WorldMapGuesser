@@ -46,9 +46,9 @@ const start = async (page: Page): Promise<void> => {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 };
 
-const countryPoint = async (page: Page, id: string): Promise<Point> => {
-  const point = await page.evaluate((countryId) => {
-    const shape = document.querySelector<SVGPathElement>(`.game-app path[data-country="${countryId}"]`);
+const countryPoint = async (page: Page, id: string, scope = '.game-app'): Promise<Point> => {
+  const point = await page.evaluate(({ countryId, scope }) => {
+    const shape = document.querySelector<SVGPathElement>(`${scope} path[data-country="${countryId}"]`);
 
     if (!shape) {
       return null;
@@ -80,7 +80,7 @@ const countryPoint = async (page: Page, id: string): Promise<Point> => {
     }
 
     return null;
-  }, id);
+  }, { countryId: id, scope });
 
   expect(point, `Visible map point for ${id}`).not.toBeNull();
 
@@ -170,7 +170,7 @@ test('finishes a complete fixture game with a win and does not accept extra answ
   expect(submitted[0]?.rights).toHaveLength(3);
 });
 
-test('opens and closes the saved map without closing the welcome dialog', async ({ page }) => {
+test('opens and closes the saved map without closing the welcome dialog', async ({ page }, testInfo) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'View map for Fixture Player' }).click();
 
@@ -178,6 +178,24 @@ test('opens and closes the saved map without closing the welcome dialog', async 
 
   await expect(preview.locator('path.map-right')).toHaveCount(1);
   await expect(preview.locator('path.map-wrong')).toHaveCount(1);
+
+  const close = await preview.getByRole('button', { name: 'Close map preview' }).boundingBox();
+  const map = await preview.locator('.score-preview-map').boundingBox();
+
+  expect(close!.y + close!.height).toBeLessThanOrEqual(map!.y);
+  expect(await preview.locator('.game-modal-close').evaluate((button) => getComputedStyle(button).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+
+  const point = await countryPoint(page, 'BR', '.score-preview-map');
+
+  await page.mouse.move(point.x, point.y);
+
+  await expect(preview.getByRole('tooltip')).toHaveText(countries.BR!.name);
+
+  await page.screenshot({ path: testInfo.outputPath('saved-map-tooltip.png') });
+
+  await page.mouse.move(0, 0);
+
+  await expect(preview.getByRole('tooltip')).toHaveCount(0);
 
   const original = await preview.locator('svg').getAttribute('viewBox');
 
@@ -189,6 +207,188 @@ test('opens and closes the saved map without closing the welcome dialog', async 
 
   await expect(preview).toHaveCount(0);
   await expect(page.getByRole('dialog', { name: 'Welcome to World Map Guesser' })).toBeVisible();
+});
+
+test('scrolls only the leaderboard in welcome and result dialogs with ten scores', async ({ page, isMobile }, testInfo) => {
+  await page.route('**/api/scores', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fallback();
+      return;
+    }
+
+    await route.fulfill({
+      json: Array.from({ length: 10 }, (_, index) => ({
+        user: `Fixture Player ${index + 1}`,
+        result: 10 - index,
+        time: 61 + index,
+        rights: ['RU'],
+        wrongs: ['BR'],
+      })),
+    });
+  });
+  await page.route('**/countries-*.json', (route) => route.fulfill({ json: { BR: countries.BR } }));
+  await page.goto('./');
+
+  const checkScroll = async (): Promise<void> => {
+    const dialog = page.getByRole('dialog');
+
+    await expect(dialog.locator('tbody tr')).toHaveCount(10);
+    await expect(dialog).not.toHaveClass(/game-modal-enter-active/);
+
+    expect(await dialog.evaluate((element) => element.scrollHeight <= element.clientHeight)).toBe(true);
+
+    const list = dialog.locator('.score-table-scroll');
+
+    expect(await list.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+
+    await list.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+
+    await expect(dialog.getByRole('button', { name: 'View map for Fixture Player 10', exact: true })).toBeInViewport();
+    expect(await dialog.evaluate((element) => element.scrollTop)).toBe(0);
+  };
+
+  for (const width of [1280, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await checkScroll();
+  }
+
+  await page.screenshot({ path: testInfo.outputPath('welcome-long-list.png') });
+  await page.getByRole('textbox', { name: 'Nickname' }).fill('Test Player');
+  await page.getByRole('button', { name: 'START', exact: true }).click();
+
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await clickCountry(page, 'BR', isMobile);
+
+  await expect(page.getByRole('heading', { name: 'YOU WIN!' })).toBeVisible();
+
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await checkScroll();
+
+    await expect(page.getByRole('button', { name: 'RESTART', exact: true })).toBeInViewport();
+  }
+
+  await page.screenshot({ path: testInfo.outputPath('result-long-list.png') });
+});
+
+test('animates dialog entry and keeps the native dialog open throughout exit', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('./');
+
+  await expect(page.getByRole('button', { name: 'View map for Fixture Player' })).toBeEnabled();
+
+  const entering = await page.getByRole('button', { name: 'View map for Fixture Player' }).evaluate(async (button) => {
+    (button as HTMLButtonElement).click();
+    await new Promise(requestAnimationFrame);
+
+    return document.querySelector('[aria-label="Saved game map"]')?.classList.contains('game-modal-enter-active');
+  });
+
+  expect(entering).toBe(true);
+
+  const preview = page.getByRole('dialog', { name: 'Saved game map' });
+
+  await expect(preview).not.toHaveClass(/game-modal-enter-active/);
+
+  const exit = await preview.evaluate(async (dialog) => {
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await new Promise(requestAnimationFrame);
+
+    return {
+      open: (dialog as HTMLDialogElement).open,
+      leaving: dialog.classList.contains('game-modal-leave-active'),
+      duration: getComputedStyle(dialog).transitionDuration,
+      content: dialog.textContent,
+    };
+  });
+
+  expect(exit).toMatchObject({ open: true, leaving: true, duration: '0.18s, 0.18s' });
+  expect(exit.content).toContain('Fixture Player');
+
+  await expect(preview).toHaveCount(0);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByRole('button', { name: 'View map for Fixture Player' }).click();
+
+  await expect(preview).toBeVisible();
+
+  await page.keyboard.press('Escape');
+
+  await expect(preview).toHaveCount(0);
+});
+
+test('loads every image with a same-origin image CSP', async ({ page }) => {
+  const violations: string[] = [];
+
+  page.on('console', (message) => {
+    if (message.text().includes('Content Security Policy')) {
+      violations.push(message.text());
+    }
+  });
+  await page.route('**/', async (route) => {
+    const response = await route.fetch();
+
+    await route.fulfill({
+      response,
+      headers: { ...response.headers(), 'Content-Security-Policy': "img-src 'self'" },
+    });
+  });
+
+  const imagesLoaded = async (): Promise<void> => {
+    await expect.poll(() => page.locator('img').evaluateAll((images) => {
+      return images.every((image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0);
+    })).toBe(true);
+  };
+
+  await page.goto('./');
+  await imagesLoaded();
+  await start(page);
+  await imagesLoaded();
+
+  expect(violations).toEqual([]);
+});
+
+test('keeps the timer layout stable and releases button focus when navigating with arrows', async ({ page }) => {
+  await page.clock.install();
+  await start(page);
+  await page.evaluate(() => document.fonts.ready);
+
+  const positions = async (): Promise<(number | undefined)[]> => {
+    const boxes = await Promise.all([
+      '.game-header-restart', '.game-header-selector', '.game-header-lives', '.game-header-score', '.game-header-time',
+    ].map((selector) => page.locator(selector).boundingBox()));
+
+    return boxes.flatMap((box) => [box?.x, box?.width]);
+  };
+
+  const initial = await positions();
+
+  for (const milliseconds of [11000, 59000, 3599000]) {
+    await page.clock.fastForward(milliseconds);
+
+    expect(await positions()).toEqual(initial);
+  }
+
+  const restart = page.getByRole('button', { name: 'Restart game' });
+
+  await restart.click();
+
+  for (const key of ['ArrowRight', 'ArrowLeft']) {
+    await restart.focus();
+    await page.keyboard.press(key);
+
+    await expect(restart).not.toBeFocused();
+  }
+
+  await restart.focus();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+
+  await expect(restart).toBeFocused();
+  expect(await restart.evaluate((button) => button.matches(':focus-visible'))).toBe(true);
 });
 
 test('stops the result timer when saving fails and keeps restart available', async ({ page, isMobile }) => {

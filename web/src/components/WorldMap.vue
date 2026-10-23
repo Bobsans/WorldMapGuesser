@@ -9,6 +9,7 @@
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"
       @pointercancel="cancelPointer"
+      @pointerleave="tooltip = null"
       @lostpointercapture="cancelPointer"
       @wheel.prevent="onWheel"
     >
@@ -17,16 +18,20 @@
         :key="id"
         :d="countries[id]?.path"
         :data-country="id"
+        :aria-label="!interactive ? countries[id]?.name : undefined"
         :class="{
           'map-right': rights.includes(id),
           'map-wrong': wrongs.includes(id),
         }"
       >
-        <title>
+        <title v-if="interactive || !wrongs.includes(id)">
           {{ interactive ? 'Country' : countries[id]?.name }}
         </title>
       </path>
     </svg>
+    <div v-if="tooltip" class="world-map-tooltip" role="tooltip" :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }">
+      {{ countries[tooltip.id]?.name }}
+    </div>
     <div class="world-map-toolbar" aria-label="Map controls">
       <button type="button" aria-label="Zoom in" @click="zoom(1.5)">+</button>
       <button type="button" aria-label="Zoom out" @click="zoom(1 / 1.5)">
@@ -56,6 +61,7 @@
   }>();
 
   const svg = useTemplateRef<SVGSVGElement>('svg');
+  const tooltip = ref<(Point & { id: CountryId }) | null>(null);
   const box = ref<ViewBox>({ ...WORLD });
   const viewBox = computed(() => `${box.value.x} ${box.value.y} ${box.value.width} ${box.value.height}`);
   const answered = computed(() => new Set([...props.rights, ...props.wrongs]));
@@ -80,6 +86,8 @@
   };
 
   const onPointerDown = (event: PointerEvent): void => {
+    tooltip.value = null;
+
     if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
@@ -99,6 +107,17 @@
   };
 
   const onPointerMove = (event: PointerEvent): void => {
+    if (!props.interactive && pointers.size === 0 && event.pointerType !== 'touch' && svg.value) {
+      const id = countryAt(event.target);
+      const rect = svg.value.getBoundingClientRect();
+
+      tooltip.value = id && props.wrongs.includes(id) ? {
+        id,
+        x: Math.max(8, Math.min(event.clientX - rect.left + 12, rect.width - 200)),
+        y: Math.max(8, event.clientY - rect.top - 40),
+      } : null;
+    }
+
     if (!pointers.has(event.pointerId) || !svg.value) {
       return;
     }
@@ -156,6 +175,8 @@
   };
 
   const onWheel = (event: WheelEvent): void => {
+    tooltip.value = null;
+
     if (!svg.value || pointers.size > 0) {
       return;
     }
@@ -166,6 +187,8 @@
   };
 
   const zoom = (factor: number): void => {
+    tooltip.value = null;
+
     const center = midpoint(box.value, {
       x: box.value.x + box.value.width,
       y: box.value.y + box.value.height,
@@ -174,6 +197,7 @@
   };
 
   const fit = (): void => {
+    tooltip.value = null;
     box.value = { ...WORLD };
   };
 
@@ -238,6 +262,20 @@
         border-color: #DDDDDD;
         box-shadow: v.$shadow;
       }
+    }
+
+    .world-map-tooltip {
+      position: absolute;
+      z-index: 1;
+      width: max-content;
+      max-width: min(192px, calc(100% - 16px));
+      padding: 8px 12px;
+      pointer-events: none;
+      color: v.$ink;
+      background: v.$white;
+      border-radius: v.$radius;
+      box-shadow: v.$shadow;
+      font-size: 13px;
     }
   }
 </style>

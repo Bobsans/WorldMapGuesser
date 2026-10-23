@@ -113,6 +113,13 @@
         font-size: 20px;
         white-space: nowrap;
 
+        .game-header-time {
+          flex: 0 0 8ch;
+          width: 8ch;
+          font-variant-numeric: tabular-nums;
+          text-align: right;
+        }
+
         .game-header-lives {
           display: flex;
           gap: 4px;

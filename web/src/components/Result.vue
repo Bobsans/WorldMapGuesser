@@ -49,7 +49,14 @@
 
 <style lang="scss">
   .game-result {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     text-align: center;
+
+    > :not(.score-table) {
+      flex-shrink: 0;
+    }
 
     h1 {
       margin: 20px 0;
@@ -73,6 +80,7 @@
     }
 
     .game-result-restart {
+      align-self: center;
       margin-top: 24px;
     }
   }
