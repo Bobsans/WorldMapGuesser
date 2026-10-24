@@ -1,57 +1,57 @@
-# Разработка фронтенда
+# Frontend development
 
-Исходники фронтенда находятся в `web/src`, его конфиги и npm-пакет — в `web`, Go-backend — в `server`. Это самостоятельный Vite-проект с обычным `index.html`, без серверных шаблонов. См. [код-стайл](code-style.md) и [инструкцию сервера](backend-development.md).
+Frontend source lives in `web/src`, its configuration and npm package in `web`, and the Go backend in `server`. The frontend is a standalone Vite project with a regular `index.html` and no server templates. See the [code style guide](code-style.md) and [backend guide](backend-development.md).
 
-`src/api` содержит сетевой клиент, `src/game` — состояние и правила партии, `src/map` — геометрию viewport, `src/utils` — перемешивание и форматирование времени. Vue-компоненты находятся в `src/components`, общие Sass-стили — в `src/styles`, данные и изображения — в `src/assets`. `src/types.ts` хранит общие модели. Локальные `.gitignore` и `.editorconfig` в `web` дополняют общие корневые правила.
+`src/api` contains the network client, `src/game` the game state and rules, `src/map` the viewport geometry, and `src/utils` shuffling and time formatting. Vue components live in `src/components`, shared Sass styles in `src/styles`, and data and images in `src/assets`. `src/types.ts` holds shared models. Local `.gitignore` and `.editorconfig` files in `web` extend the root rules.
 
-Фронтенд переведён на Vue 3, TypeScript, Vite и Sass (синтаксис SCSS). Форматирование задают `.editorconfig`, ESLint и Stylelint: два пробела, порядок `template → script → style`, обязательные фигурные скобки и K&R. Стили глобальные, с классами компонентов; `scoped` запрещён правилом ESLint. Глобальный event bus и Vue filters заменены props/emits и типизированными функциями. `svg-pan-zoom` заменён собственными Pointer Events и математикой SVG viewBox.
+The frontend uses Vue 3, TypeScript, Vite, and Sass (SCSS syntax). Formatting is defined by `.editorconfig`, ESLint, and Stylelint: two spaces, `template → script → style` order, mandatory braces, and K&R style. Styles are global and use component classes; ESLint prohibits `scoped`. Props/emits and typed functions replace the global event bus and Vue filters. Pointer Events and SVG viewBox calculations replace `svg-pan-zoom`.
 
-## Окружение и команды
+## Requirements and commands
 
-Для разработки нужны Go 1.27.3, Node.js 24 и npm. Основной запуск из корня репозитория:
+Development requires Go 1.27.3, Node.js 24, and npm. The main development command, run from the repository root, is:
 
 ```sh
 go -C server run -tags dev .
 ```
 
-Go запускает Vite и проксирует HTTP/WebSocket; интерфейс и API доступны на `http://127.0.0.1:8280/`. При отсутствии зависимостей он сначала выполняет `npm ci`. При остановке Go завершается и npm/Vite. Frontend HMR работает через тот же origin.
+Go starts Vite and proxies HTTP/WebSocket traffic; the interface and API are available at `http://127.0.0.1:8280/`. If dependencies are missing, it first runs `npm ci`. Stopping Go also terminates npm/Vite. Frontend HMR uses the same origin.
 
-Для самостоятельной работы с фронтендом остаются `npm ci` и `npm run dev` в `web`: Vite слушает `127.0.0.1:8300` и проксирует `/api` на `http://127.0.0.1:8280`. Другой backend задаётся через `API_PROXY_TARGET`. Все npm-команды ниже выполняются из `web`; из корня можно использовать `npm --prefix web run <command>`. Версии зависимостей зафиксированы в npm-пакете и lock-файле. При недоступном API интерфейс показывает ошибку рейтинга/сохранения.
+For independent frontend work, run `npm ci` and `npm run dev` in `web`: Vite listens on `127.0.0.1:8300` and proxies `/api` to `http://127.0.0.1:8280`. Set `API_PROXY_TARGET` to use another backend. All npm commands below run from `web`; from the root, use `npm --prefix web run <command>`. Dependency versions are pinned in the npm package and lockfile. If the API is unavailable, the interface displays a leaderboard or result-saving error.
 
-| Команда                                                               | Назначение                                                                      |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `npm run type-check`                                                  | Строгая проверка TypeScript и Vue SFC                                           |
-| `npm run lint`                                                        | ESLint flat config: JS, TS, Vue и запрет scoped styles                          |
-| `npm run stylelint`                                                   | Stylelint для глобальных SCSS-файлов и Sass-блоков Vue                          |
-| `npm run format` | Автоисправление ESLint и Stylelint |
-| `npm test`                                                            | Vitest: правила партии, время, SVG-координаты и контракт API                    |
-| `npm run build`                                                       | Проверка типов и production-сборка в `web/dist`                                 |
-| `npm run check`                                                       | Линтеры, форматирование, unit-тесты, типы и сборка                              |
-| `npm run preview`                                                     | Локальный просмотр production-сборки на `127.0.0.1:8301/`                       |
-| `npm run test:e2e`                                                    | Playwright: production-сборка на desktop и мобильном viewport                   |
+| Command | Purpose |
+| --- | --- |
+| `npm run type-check` | Strict TypeScript and Vue SFC checks |
+| `npm run lint` | ESLint flat config for JS, TS, Vue, and the ban on scoped styles |
+| `npm run stylelint` | Stylelint for global SCSS files and Vue Sass blocks |
+| `npm run format` | Apply ESLint and Stylelint fixes |
+| `npm test` | Vitest: game rules, time, SVG coordinates, and the API contract |
+| `npm run build` | Type checking and a production build in `web/dist` |
+| `npm run check` | Linters, formatting checks, unit tests, types, and build |
+| `npm run preview` | Local production preview at `127.0.0.1:8301/` |
+| `npm run test:e2e` | Playwright: the production build in desktop and mobile viewports |
 
-Перед первым браузерным прогоном установить Chromium командой `npx playwright install chromium`. В CI Linux используется `npx playwright install --with-deps chromium`. По умолчанию Playwright сам запускает и закрывает preview-сервер. `E2E_BASE_URL` позволяет проверить уже запущенный Go-сервер вместо preview; этот режим используется проверкой упакованного бинарника. Рабочая база для браузерных сценариев не нужна: E2E используют API-фикстуры. Сценарий победы использует короткий каталог из исходных контуров; полный каталог из 256 стран проверяется отдельно.
+Before the first browser run, install Chromium with `npx playwright install chromium`. Linux CI uses `npx playwright install --with-deps chromium`. By default, Playwright starts and stops the preview server itself. Set `E2E_BASE_URL` to test an already running Go server instead; the packaged executable check uses this mode. Browser scenarios do not require a working database: E2E tests use API fixtures. The win scenario uses a small catalog with original map outlines; the full 256-entry catalog is checked separately.
 
-На TypeScript 7 переход пока не выполнен: актуальный `typescript-eslint` 8.72.0 поддерживает TypeScript ниже 6.1. Выбран последний совместимый стабильный TypeScript 6.0.3. Остальные прямые зависимости обновлены до проверенных стабильных версий на 23 октября 2026 года.
+The move to TypeScript 7 has not been made: the selected `typescript-eslint` 8.72.0 supports TypeScript below 6.1. TypeScript 6.0.3 was selected as the latest compatible stable release. Other direct dependencies were updated to verified stable versions as of October 23, 2026.
 
-## Сборка и граница с backend
+## Builds and the backend boundary
 
-- `web/index.html` — обычный entrypoint Vite; production-сборка сохраняет эту структуру и использует пути от `/`.
-- `npm run build` создаёт стандартный `web/dist`, без серверного manifest или шагов для Go.
-- `go -C server run ./cmd/build` из корня сам запускает frontend-сборку и упаковывает её результат в исполняемый файл. На production ресурсы раздаёт Go, внешняя папка статики не требуется.
-- Большой исходный `web/src/assets/data/countries.json` поставляется отдельным хешированным JSON-ресурсом, а не дублируется внутри JavaScript. Исходный каталог не изменён.
-- Шрифты Comfortaa берутся из npm-пакета и входят в статическую сборку; обязательного запроса к Google Fonts нет.
-- Фронтенд знает только `GET /api/scores` и `POST /api/scores`; он не знает путь SQLite, расположение бинарника и способ упаковки. JSON-поля результатов сохранены, HTTP-ошибки с JSON-полем `error` отображаются пользователю.
-- Серверная проверка игровых сессий и идемпотентность остаются следующей задачей плана. Неоднозначно завершившийся POST автоматически не повторяется.
+- `web/index.html` is a regular Vite entry point; the production build preserves this structure and uses paths rooted at `/`.
+- `npm run build` produces a standard `web/dist`, with no server manifest or Go-specific steps.
+- From the root, `go -C server run ./cmd/build` runs the frontend build and packages its output into the executable. Go serves the production assets; no external static directory is required.
+- The large source file `web/src/assets/data/countries.json` is shipped as a separate hashed JSON asset rather than duplicated inside JavaScript. The original catalog is unchanged.
+- Comfortaa fonts come from an npm package and are included in the static build; no request to Google Fonts is required.
+- The frontend knows only `GET /api/scores` and `POST /api/scores`; it does not know the SQLite path, executable location, or packaging method. Result JSON fields are preserved, and HTTP errors with a JSON `error` field are shown to the player.
+- Server-side game session validation and idempotency remain the next task in the plan. A POST with an uncertain outcome is not retried automatically.
 
-## Состояние игры и управление
+## Game state and controls
 
-`web/src/game/state.ts` содержит чистые правила партии. Три жизни, подсчёт правильных ответов, переключение заданий, окрашивание ожидаемой страны при ошибке и топ-10 сохранены. После всех заданий наступает победа, после третьей ошибки — поражение. Завершённая партия сразу останавливает таймер; сетевой запрос не задерживает экран результата. При рестарте старый запрос не может изменить статус новой партии.
+`web/src/game/state.ts` contains the pure game rules. Three lives, correct-answer counting, switching prompts, coloring the expected country after a mistake, and the top 10 are preserved. Answering every prompt results in a win; the third mistake results in a loss. A completed game stops the timer immediately; a network request never delays the result screen. After a restart, an old request cannot change the new game's status.
 
-`web/src/map/viewport.ts` отвечает за масштаб, координаты с учётом SVG letterboxing и границы перемещения. `WorldMap.vue` обрабатывает мышь, колесо, один/два пальца, pointer capture и отмену жестов. Перетаскивание и pinch не считаются ответом. Есть кнопки масштаба и возврата к обзору. Смена размеров окна не сбрасывает текущее положение карты.
+`web/src/map/viewport.ts` handles zoom, coordinates with SVG letterboxing, and pan bounds. `WorldMap.vue` handles the mouse, wheel, one or two fingers, pointer capture, and gesture cancellation. Dragging and pinching do not count as answers. Zoom and overview-reset buttons are available. Resizing the window preserves the current map position.
 
-Интерфейс адаптирован к узким экранам: перестраиваются header, подсказки и информация preview, диалоги прокручиваются, кнопки рассчитаны на сенсорное управление. Автоматические мобильные проверки выполняются в Chromium-эмуляции. Проверки на физических Android/iOS и отдельный WebKit-прогон остаются частью последующей мобильной приёмки.
+The interface adapts to narrow screens: the header, hints, and preview information reflow, dialogs scroll, and buttons support touch interaction. Automated mobile checks use Chromium emulation. Physical Android/iOS checks and a separate WebKit run remain part of later mobile acceptance testing.
 
-## Известное ограничение аудита зависимостей
+## Known dependency audit limitation
 
-На момент обновления у последнего стабильного `braces` 3.0.3 остаётся [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), затрагивающая вложенные glob-паттерны. Он приходит через инструменты Stylelint и отсутствует в коде браузерного приложения. Исправленного стабильного выпуска в npm на дату проверки нет; предупреждение не подавлено. Исправленная версия `kind-of` 6.0.3, также используемого tooling, установлена. Повторять полный `npm audit` при обновлении зависимостей, чтобы убрать это ограничение после upstream-исправления.
+At the time of the update, the latest stable `braces` 3.0.3 still had [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), which affects nested glob patterns. It is a transitive dependency of Stylelint tooling and is absent from the browser application. No fixed stable npm release was available on the verification date; the warning has not been suppressed. The fixed `kind-of` 6.0.3, also used by tooling, is installed. Repeat the full `npm audit` when updating dependencies so this limitation can be removed after an upstream fix.

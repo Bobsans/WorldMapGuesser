@@ -1,8 +1,8 @@
-# Код-стайл фронтенда
+# Frontend code style
 
-Правила обязательны для исходников, компонентов, тестов и frontend-конфигов в `web`. Их задают `.editorconfig`, ESLint и Stylelint; тот же набор проверок запускается в CI.
+These rules apply to source files, components, tests, and frontend configuration in `web`. They are defined by `.editorconfig`, ESLint, and Stylelint; CI runs the same checks.
 
-## Структура проекта
+## Project structure
 
 ```text
 server/
@@ -49,52 +49,52 @@ web/
   stylelint.config.js
 ```
 
-Корневые `.editorconfig`, `.gitignore`, `.github` и `docs` относятся ко всему репозиторию. Фронтенд собирается в `web/dist`. Backend упаковывает готовую сборку в бинарник; Go-код форматируется `gofmt` с табуляцией. См. [разработку сервера](backend-development.md). Локальная dev-база находится в `server/db.sqlite` и не отслеживается Git.
+The root `.editorconfig`, `.gitignore`, `.github`, and `docs` apply to the entire repository. The frontend builds into `web/dist`. The backend packages that output into the executable; Go code uses `gofmt` with tabs. See [backend development](backend-development.md). The local development database is `server/db.sqlite` and is not tracked by Git.
 
-Код размещается по назначению: `api` содержит сетевой клиент, `game` — чистые правила и состояние партии, `map` — математику viewport, `utils` — небольшие общие функции. Компоненты находятся в `components`, общие стили — в `styles`. Каталог `assets` содержит только статические данные и изображения. Общие модели остаются в `types.ts`; отдельные barrel-файлы для реэкспорта не нужны.
+Organize code by responsibility: `api` contains the network client, `game` the pure game rules and state, `map` the viewport math, and `utils` small shared functions. Components live in `components`, and shared styles in `styles`. The `assets` directory contains only static data and images. Shared models stay in `types.ts`; separate barrel files for re-exports are unnecessary.
 
-Локальные `.gitignore` исключают frontend-зависимости и сборку в `web`, встроенную статику и dev-базу в `server`. Корневой `.gitignore` содержит общие IDE/env-правила и корневой результат сборки приложения `bin`. Настройки `.editorconfig` наследуются от корня: лимит frontend-строк задаётся в `web/.editorconfig`, табуляция Go — в `server/.editorconfig`.
+Local `.gitignore` files exclude frontend dependencies and build output in `web`, and embedded assets and the development database in `server`. The root `.gitignore` contains shared IDE/environment rules and the application's root `bin` output. `.editorconfig` settings inherit from the root: `web/.editorconfig` defines the frontend line-length limit, and `server/.editorconfig` defines Go tabs.
 
-## Отступы и Vue-компоненты
+## Indentation and Vue components
 
-- Два пробела, без табуляции; UTF-8, LF, завершающий перевод строки и отсутствие пробелов в конце строк.
-- Порядок секций SFC: `template`, затем `script`, затем `style`.
-- Секции разделяются одной пустой строкой.
-- Внутри каждой секции корневое содержимое начинается с двух пробелов. Каждый следующий уровень вложенности добавляет ещё два.
-- Открывающий тег со всеми атрибутами пишется в одну строку, если её длина не превышает 150 символов, включая отступ. Если строка длиннее, каждый атрибут переносится на отдельную строку.
-- Допустимы только два варианта: все атрибуты в одной строке либо каждый атрибут на своей строке. При переносе `>` или `/>` располагается на отдельной строке на уровне открывающего тега. Значения атрибутов, включая значимые пробелы и многострочные выражения, сохраняются; многострочное значение требует переноса всех атрибутов.
-- Компоненты в шаблоне записываются в `kebab-case`, например `<score-table />`; имена импортов — в `PascalCase`, например `ScoreTable`.
-- Имя компонента выводится из имени файла. Явный параметр `name`, в том числе в `defineOptions`, запрещён. Остальные настройки `defineOptions` допустимы.
-- Компоненты без содержимого используют самозакрывающуюся запись с пробелом перед `/>`.
-- Атрибуты используют двойные кавычки; выражения `{{ ... }}` и объекты `{ ... }` — пробелы внутри фигурных скобок.
-- Скрипты используют `script setup lang="ts"`; стили — `style lang="scss"` без `scoped` и CSS Modules.
-- ESLint задаёт два пробела правилами `@stylistic/indent`, `vue/script-indent` и `vue/html-indent`. Для секций Vue используется `baseIndent: 1`. Порядок блоков проверяется правилом `vue/block-order`.
-- Stylelint задаёт два пробела для Sass через `@stylistic/indentation`; у Vue-блоков `style` установлен `baseIndentLevel: 1`.
+- Use two spaces, no tabs; UTF-8, LF, a final newline, and no trailing whitespace.
+- SFC section order is `template`, then `script`, then `style`.
+- Separate sections with one blank line.
+- Root content inside each section starts at two spaces. Each additional nesting level adds two more.
+- Keep an opening tag and all its attributes on one line if the line is at most 150 characters, including indentation. If it is longer, place every attribute on its own line.
+- Only two layouts are allowed: all attributes on one line, or each attribute on a separate line. In the multiline layout, put `>` or `/>` on its own line at the opening tag's indentation level. Preserve attribute values, including significant whitespace and multiline expressions; a multiline value requires moving every attribute to a separate line.
+- Use `kebab-case` for components in templates, such as `<score-table />`; use `PascalCase` for imports, such as `ScoreTable`.
+- Component names are inferred from filenames. An explicit `name` option, including one in `defineOptions`, is prohibited. Other `defineOptions` settings are allowed.
+- Components without content use self-closing tags with a space before `/>`.
+- Attributes use double quotes; `{{ ... }}` expressions and `{ ... }` objects have spaces inside braces.
+- Scripts use `script setup lang="ts"`; styles use `style lang="scss"` without `scoped` or CSS Modules.
+- ESLint enforces two spaces through `@stylistic/indent`, `vue/script-indent`, and `vue/html-indent`. Vue sections use `baseIndent: 1`. `vue/block-order` checks section order.
+- Stylelint enforces two spaces for Sass through `@stylistic/indentation`; Vue `style` blocks use `baseIndentLevel: 1`.
 
-`max_line_length = 150` в `web/.editorconfig` задаёт ориентир для редактора. Перенос атрибутов по этому порогу в Vue и HTML проверяет и автоматически исправляет локальное правило ESLint `project/attribute-layout`. Это не требует разрывать длинные строковые значения или текст шаблона.
+`max_line_length = 150` in `web/.editorconfig` provides the editor guideline. The local ESLint rule `project/attribute-layout` checks and fixes Vue and HTML attribute layout at that threshold. It does not require splitting long string values or template text.
 
-Имена и запись компонентов проверяют `vue/component-name-in-template-casing`, `vue/no-restricted-component-options`, `vue/html-self-closing` и `no-restricted-syntax`. Правило `vue/multi-word-component-names` отключено: допустимы односоставные имена файлов, например `Result.vue` и `Modal.vue`.
+`vue/component-name-in-template-casing`, `vue/no-restricted-component-options`, `vue/html-self-closing`, and `no-restricted-syntax` check component names and syntax. `vue/multi-word-component-names` is disabled: single-word filenames such as `Result.vue` and `Modal.vue` are allowed.
 
 ## TypeScript
 
-- Строки используют одинарные кавычки, инструкции завершаются точкой с запятой.
-- В именованных импортах и объектах ставятся пробелы внутри фигурных скобок.
-- Ориентир длины строки — 150 символов вместе с отступом. Импорты, параметры функций, вызовы, условия, цепочки методов и тернарные выражения пишутся компактно, если помещаются. Длинные выражения переносятся по логическим границам; правило «по одному атрибуту» относится только к HTML/Vue.
-- Многострочные объекты, массивы и типы сохраняют свою структуру. Внешние вызовы не получают лишних уровней переноса: открывающая скобка аргумента остаётся рядом с вызовом, следующий аргумент может начинаться сразу после закрывающей скобки предыдущего.
-- Между функциями, интерфейсами, блоками проверок и последующими действиями ставится одна пустая строка. В тестах разделяются подготовка, действие и проверки. Связанные объявления состояния или вычислений можно группировать; смысловые границы групп сохраняются при форматировании.
-- Использовать существующие именованные типы, например `Point`, вместо повторных структурных описаний. Чистые импорты типов используют `import type`; смешанные импорты могут использовать `import { WORLD, type Point }`.
-- Допустимы обе формы стрелочных функций: краткий возврат выражения и блочное тело с `return`. Массово преобразовывать одну форму в другую не нужно.
-- Импорты идут единым блоком без пустых строк внутри. После импортов и между блоками `defineProps`, `defineEmits` и остальным кодом ставится одна пустая строка. Это относится и к `defineProps`, обёрнутому в `withDefaults`.
-- В многострочных типах и интерфейсах каждый член записывается на отдельной строке и завершается `;`. За это отвечают `project-types/multiline-members` и `@stylistic/member-delimiter-style`.
-- Предпочитать `const` и стрелочные функции, в том числе именованные обработчики и экспортируемые функции.
-- `if`, `else`, `for`, `while` и `do` всегда используют фигурные скобки, даже для единственного действия.
-- Стиль скобок — K&R/1TBS: открывающая скобка на той же строке, `else` и `catch` — на строке закрывающей скобки предыдущего блока.
-- Тело блока пишется с переносами строк; однострочные блоки условий и циклов не используются.
-- Исключения для обычных функций допустимы, когда этого требует API или нужна собственная семантика `this`; текущий фронтенд таких исключений не требует.
+- Use single quotes for strings and semicolons to end statements.
+- Put spaces inside braces in named imports and objects.
+- The line-length guideline is 150 characters, including indentation. Keep imports, function parameters, calls, conditions, method chains, and ternary expressions compact when they fit. Wrap long expressions at logical boundaries; the one-attribute-per-line rule applies only to HTML/Vue.
+- Preserve the structure of multiline objects, arrays, and types. Avoid unnecessary wrapping in surrounding calls: keep an argument's opening bracket beside the call, and allow the next argument to start directly after the previous argument's closing bracket.
+- Put one blank line between functions, interfaces, groups of checks, and subsequent actions. In tests, separate setup, action, and assertions. Related state declarations or calculations may be grouped; formatting must preserve meaningful group boundaries.
+- Reuse existing named types, such as `Point`, instead of repeating structural definitions. Type-only imports use `import type`; mixed imports may use `import { WORLD, type Point }`.
+- Both arrow function forms are allowed: an implicit expression return and a block body with `return`. Do not convert one form into the other across the project.
+- Keep imports in a single block without blank lines inside it. Put one blank line after imports and between `defineProps`, `defineEmits`, and the rest of the code. This also applies to `defineProps` wrapped in `withDefaults`.
+- In multiline types and interfaces, write each member on its own line and end it with `;`. `project-types/multiline-members` and `@stylistic/member-delimiter-style` enforce this.
+- Prefer `const` and arrow functions, including named handlers and exported functions.
+- `if`, `else`, `for`, `while`, and `do` always use braces, even for a single action.
+- Use K&R/1TBS brace style: the opening brace is on the same line; `else` and `catch` share the previous block's closing-brace line.
+- Write block bodies across multiple lines; do not use single-line condition or loop blocks.
+- Regular functions are allowed when an API requires them or they need their own `this` semantics; the current frontend has no such requirement.
 
-ESLint закрепляет `curly: all`, `func-style: expression`, `prefer-arrow-callback`, `@stylistic/brace-style: 1tbs`, отступы, кавычки и точки с запятой.
+ESLint enforces `curly: all`, `func-style: expression`, `prefer-arrow-callback`, `@stylistic/brace-style: 1tbs`, indentation, quotes, and semicolons.
 
-Правило `project-layout/compact` убирает лишние переносы в выражениях, помещающихся в 150 символов. Оно сохраняет структуру многострочных объектов и типов, строковые литералы и комментарии. Порог не заставляет разрывать строки или текст. Группировку по смыслу и повторное использование именованных типов проверяем при редактировании; синтаксические границы блоков и запись импортов типов проверяет ESLint.
+`project-layout/compact` removes unnecessary line breaks in expressions that fit within 150 characters. It preserves multiline objects and types, string literals, and comments. The threshold does not require splitting strings or text. Meaningful grouping and named-type reuse are checked during editing; ESLint checks syntactic block boundaries and type-import syntax.
 
 ```ts
 const props = withDefaults(defineProps<{
@@ -105,38 +105,38 @@ const props = withDefaults(defineProps<{
 });
 ```
 
-## Импорты
+## Imports
 
-| Алиас      | Путь              |
-| ---------- | ----------------- |
-| `@/`       | `web/src/`        |
+| Alias | Path |
+| --- | --- |
+| `@/` | `web/src/` |
 | `@assets/` | `web/src/assets/` |
 
-Алиасы заданы одинаково в `web/tsconfig.json`, Vite и Vitest. Компоненты, TypeScript-модули, изображения и геоданные импортируются через них. Относительные импорты frontend-модулей запрещены ESLint.
+Aliases are configured consistently in `web/tsconfig.json`, Vite, and Vitest. Use them to import components, TypeScript modules, images, and geographic data. ESLint prohibits relative imports of frontend modules.
 
-Переменные Sass подключаются через `@use '@/styles/variables' as v;`. Встроенные модули Sass, например `sass:color`, сохраняют собственные имена. Пути к файлам, которые тесты читают через Node `fs` и `import.meta.url`, остаются обычными файловыми URL, а не импортами модулей.
+Import Sass variables with `@use '@/styles/variables' as v;`. Built-in Sass modules such as `sass:color` keep their own names. Paths read by tests through Node `fs` and `import.meta.url` remain ordinary file URLs rather than module imports.
 
 ## Sass
 
-- Стили глобальные, с понятными классами компонентов.
-- Селекторы элементов компонента и состояния записываются вложенно; объявления, селекторы и блоки разделяются переносами строк.
-- Каждое свойство записывается на отдельной строке и завершается `;`. Между блоками селекторов ставится одна пустая строка; перед первым вложенным селектором она не обязательна, если перед ним нет объявлений.
-- Медиаусловия располагаются внутри соответствующего блока компонента.
-- Значения Sass-переменных выравниваются по одной колонке внутри непрерывной группы. Уже выровненная группа сохраняет выбранную колонку; новая группа выравнивается по самому длинному имени с минимум одним пробелом после `:`. Пустая строка, комментарий или другой узел отделяют группы.
-- Обычные CSS-свойства используют один пробел после `:`. Значения, включая тени и градиенты, пишутся в одну строку, если помещаются в 150 символов. Строки, комментарии, Sass-карты и потоки токенов custom properties сохраняются.
-- HEX-цвета записываются в полной форме заглавными буквами: `#FFFFFF`, `#C38F58`, `#AABBCCDD`. Функциональная запись `rgb(...)` остаётся функциональной.
-- Для элементов, вынесенных через `Teleport`, используются отдельные корневые блоки: preview-модалка физически находится вне `.score-table`.
-- Не добавлять одноразовые исключения линтера для обхода выбранного стиля.
+- Styles are global, with clear component class names.
+- Nest selectors for component elements and states; separate declarations, selectors, and blocks with line breaks.
+- Write each property on its own line, ending with `;`. Put one blank line between selector blocks; a blank line before the first nested selector is optional when no declarations precede it.
+- Keep media queries inside the relevant component block.
+- Align Sass variable values in a single column within each consecutive group. Preserve the chosen column in an already aligned group; align a new group to the longest name, with at least one space after `:`. A blank line, comment, or other node separates groups.
+- Ordinary CSS properties use one space after `:`. Keep values, including shadows and gradients, on one line when they fit within 150 characters. Preserve strings, comments, Sass maps, and custom-property token streams.
+- Write HEX colors in full uppercase form: `#FFFFFF`, `#C38F58`, `#AABBCCDD`. Functional `rgb(...)` notation stays functional.
+- Use separate root blocks for elements rendered through `Teleport`: the preview modal is physically outside `.score-table`.
+- Do not add one-off lint exceptions to bypass the agreed style.
 
-Выравнивание переменных и компактные значения проверяют `project/sass-variable-alignment` и `project/compact-values`; длину и регистр HEX — `color-hex-length` и `@stylistic/color-hex-case`.
+`project/sass-variable-alignment` and `project/compact-values` check variable alignment and compact values; `color-hex-length` and `@stylistic/color-hex-case` check HEX length and case.
 
-## Редактор
+## Editor
 
-Корневой `.editorconfig` задаёт базовые отступы и LF, а `web/.editorconfig` — ориентир 150 символов. В `.vscode/settings.json` задана линейка 150, отключено автоопределение отступов и включены исправления ESLint/Stylelint при явном сохранении. Отдельный форматтер при сохранении отключён, чтобы он не переписывал согласованную раскладку. Рекомендуемые расширения перечислены в `.vscode/extensions.json`. Пользовательские настройки Vue для начального отступа и ввода сохранены. Для Go действует `server/.editorconfig` с табуляцией.
+The root `.editorconfig` sets base indentation and LF, while `web/.editorconfig` sets the 150-character guideline. `.vscode/settings.json` sets a ruler at 150, disables indentation detection, and enables ESLint/Stylelint fixes on explicit save. A separate format-on-save formatter is disabled so it does not rewrite the agreed layout. Recommended extensions are listed in `.vscode/extensions.json`. The user's Vue settings for initial indentation and input are preserved. Go uses tabs through `server/.editorconfig`.
 
-## Проверки
+## Checks
 
-Из корня репозитория:
+From the repository root:
 
 ```sh
 npm --prefix web run format
@@ -146,8 +146,8 @@ npm --prefix web run test:e2e
 go -C server test -tags dev ./...
 ```
 
-Последняя команда проверяет Go API, сохранность SQLite и раздачу статики без необходимости предварительно собирать фронтенд.
+The last command checks the Go API, SQLite persistence, and static serving without requiring a frontend build first.
 
-`lint:fix` применяет исправления ESLint, `stylelint:fix` — исправления Stylelint. Команда `format` последовательно запускает оба инструмента; отдельного форматтера нет. Обычный `check` выполняет проверки без изменения файлов.
+`lint:fix` applies ESLint fixes; `stylelint:fix` applies Stylelint fixes. `format` runs both tools in sequence; there is no separate formatter. A regular `check` runs without modifying source files.
 
-Локальные правила находятся в `web/eslint-rules` и `web/stylelint-rules`. Регрессионные тесты в `web/tests/unit/code-style.test.ts` и `web/tests/unit/stylelint.test.ts` проверяют порог 150/151, переносы атрибутов и выражений, сохранение литералов и комментариев, выравнивание Sass, цвета и повторное форматирование без изменений.
+Local rules live in `web/eslint-rules` and `web/stylelint-rules`. Regression tests in `web/tests/unit/code-style.test.ts` and `web/tests/unit/stylelint.test.ts` cover the 150/151 threshold, attribute and expression layout, literal and comment preservation, Sass alignment, colors, and unchanged output when formatting is repeated.
